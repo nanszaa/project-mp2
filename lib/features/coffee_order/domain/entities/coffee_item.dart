@@ -6,9 +6,6 @@ class CoffeeItem {
   String imageUrl;
   String category;
   bool isAvailable;
-  DateTime createdAt;
-  DateTime updatedAt;
-  String ingredients;
 
   CoffeeItem({
     required this.id,
@@ -18,8 +15,5 @@ class CoffeeItem {
     required this.imageUrl,
     required this.category,
     required this.isAvailable,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.ingredients,
   });
 }
