@@ -4,6 +4,7 @@ import 'package:coffee_shop/features/coffee_order/domain/usecases/create_order_u
 import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/process_payment_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use_case.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/menu_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 // Import HomePage dari folder presentation Anda
@@ -13,17 +14,17 @@ void main() {
   final coffeeService = CoffeeService();
   final repository = CoffeeRepositoryImpl(coffeeService: coffeeService);
 
-  final getMenuUseCase = GetMenuUseCase(repository);
-  final scanTableUseCase = ScanTableUseCase(repository);
-  final createOrderUseCase = CreateOrderUseCase(repository);
-  final processPaymentUseCase = ProcessPaymentUseCase(repository);
+  final getMenu = GetMenuUseCase(repository);
+  final scanTable = ScanTableUseCase(repository);
+  final createOrder = CreateOrderUseCase(repository);
+  final processPayment = ProcessPaymentUseCase(repository);
   
   runApp(MyApp(
     coffeeNotifier: CoffeeNotifier(
-      getMenuUseCase: getMenuUseCase,
-      scanTableUseCase: scanTableUseCase,
-      createOrderUseCase: createOrderUseCase,
-      processPaymentUseCase: processPaymentUseCase,
+      getMenuUseCase: getMenu,
+      scanTableUseCase: scanTable,
+      createOrderUseCase: createOrder,
+      processPaymentUseCase: processPayment,
     ),
   ));
 }
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6F4E37)),
         useMaterial3: true,
       ),
-      home: const MenuScreen(notifier: coffeeNotifier),
+      home: MenuScreen(notifier: coffeeNotifier),
     );
   }
 }
