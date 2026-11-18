@@ -3,24 +3,21 @@ import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.da
 import 'package:dio/dio.dart';
 
 class CoffeeService {
-  final Dio _dio;
 
-  CoffeeService() : _dio = Dio(BaseOptions(
-    baseUrl: 'https://api.dosen.com/api/', // Ganti dengan Base URL dari dosen
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
+  final Dio dio = Dio(BaseOptions(
+    baseUrl: 'https://apilearn.kaylabs.id/api/v1/p-ptwsvxh5/',
     headers: {
-      'Content-Type': 'application/json',
       'Accept': 'application/json',
-      // Jika butuh token bearer (auth), tambahkan di sini:
-      // 'Authorization': 'Bearer YOUR_TOKEN',
+      'X-API-KEY': 'apl_Nk6iMVrp56SpsE6ZUpdItSb7IvvJeIdW',
     },
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
   ));
 
   // Method untuk mengambil data menu kopi dari API
   Future<List<CoffeeItem>> fetchCoffeeMenu() async {
     try {
-      final response = await _dio.get('coffee-menu'); // Endpoint spesifik menu
+      final response = await dio.get('coffee-menu'); // Endpoint spesifik menu
 
       // Periksa apakah response berhasil (biasanya status code 200)
       if (response.statusCode == 200) {
