@@ -1,3 +1,4 @@
+import 'package:coffee_shop/features/coffee_order/application/services/CoffeeService.dart';
 import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/create_order_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
@@ -9,7 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/login_pages.dart';
 
 void main() {
-  final repository = CoffeeRepositoryImpl();
+  final coffeeService = CoffeeService();
+  final repository = CoffeeRepositoryImpl(coffeeService: coffeeService);
+
   final getMenuUseCase = GetMenuUseCase(repository);
   final scanTableUseCase = ScanTableUseCase(repository);
   final createOrderUseCase = CreateOrderUseCase(repository);

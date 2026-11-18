@@ -1,4 +1,5 @@
 // lib/infrastructure/repositories/coffee_repository_impl.dart
+import 'package:coffee_shop/features/coffee_order/application/services/CoffeeService.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
@@ -7,31 +8,14 @@ import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_rep
 
 class CoffeeRepositoryImpl implements CoffeeRepository {
   // Catatan: Nanti di sini kita akan menyuntikkan HTTP Client atau Service API dari dosen
+  final CoffeeService coffeeService;
+
+  CoffeeRepositoryImpl({required this.coffeeService});
 
   @override
   Future<List<CoffeeItem>> getCoffeeMenu() async {
     // Simulasi data menu kopi (Nanti diganti dengan pemanggilan API dosen)
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      CoffeeItem(
-        id: '1',
-        name: 'Caramel Macchiato',
-        description: 'Espresso dengan susu segar dan saus karamel manis.',
-        price: 32000,
-        imageUrl: 'https://images.unsplash.com/photo-1485808191679-edf86b7fd6e9',
-        category: 'Espresso',
-        isAvailable: true,
-      ),
-      CoffeeItem(
-        id: '2',
-        name: 'Caffe Latte',
-        description: 'Perpaduan seimbang espresso dan steamed milk.',
-        price: 28000,
-        imageUrl: 'https://images.unsplash.com/photo-1561047029-3000c68339ca',
-        category: 'Espresso',
-        isAvailable: true,
-      ),
-    ];
+    return await coffeeService.fetchCoffeeMenu();
   }
 
   @override
