@@ -1,12 +1,79 @@
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
+import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
+import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_repository.dart';
 
-class MenuScreen extends StatelessWidget {
-  const MenuScreen({super.key});
+class MenuScreen extends StatefulWidget {
+  const MenuScreen({super.key, required CoffeeNotifier notifier});
+
+  @override
+  State<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends State<MenuScreen> {
+  // [2. INSTANSIASI REPOSITORY]
+  final CoffeeRepository _coffeeRepository = CoffeeRepositoryImpl();
+
+  // Daftar kategori untuk filter
+  final List<String> _categories = [
+    'Semua Menu',
+    'Espresso',
+    'Manual Brew',
+    'Fresh Bake',
+  ];
+
+  String _selectedCategory = 'Semua Menu';
+
+  // [3. VARIABEL STATE DATA & LOADING]
+  List<CoffeeItem> _allMenuItems = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMenu(); // Panggil data repository saat layar dibuka
+  }
+
+  // [4. FUNGSI MENGAMBIL DATA MENU DARI REPOSITORY]
+  Future<void> _fetchMenu() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final items = await _coffeeRepository.getCoffeeMenu();
+      setState(() {
+        _allMenuItems = items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat menu: $e')),
+        );
+      }
+    }
+  }
+
+  // [5. FILTER MENU BERDASARKAN KATEGORI AKTIF]
+  List<CoffeeItem> get _filteredMenuItems {
+    if (_selectedCategory == 'Semua Menu') {
+      return _allMenuItems;
+    }
+    return _allMenuItems
+        .where((item) =>
+            item.category.toLowerCase() == _selectedCategory.toLowerCase())
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F6F0), // Latar belakang krem hangat
+      backgroundColor: const Color(0xFFF9F6F0),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -32,7 +99,7 @@ class MenuScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Kohi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          Text('Dine-in • Meja 04', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text('Dine-in • Meja 05', style: TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
                     ],
@@ -56,50 +123,55 @@ class MenuScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Kategori Filter (Pilihan Barista, Espresso Bar, Fresh Bake, dll)
+              // Filter Kategori
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: [
-                    _buildCategoryChip('Semua Menu', true),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip('Espresso Bar', false),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip('Manual Brew', false),
-                    const SizedBox(width: 8),
-                    _buildCategoryChip('Fresh Bake', false),
-                  ],
+                  children: _categories.map((category) {
+                    final isSelected = category == _selectedCategory;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: _buildCategoryChip(category, isSelected),
+                    );
+                  }).toList(),
                 ),
               ),
               const SizedBox(height: 20),
 
-              // Daftar Produk / Menu Makanan & Minuman
-              const Text(
-                'Pilihan Favorit Di Meja 04',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+              // Judul Menu Sesuai Kategori
+              Text(
+                _selectedCategory == 'Semua Menu'
+                    ? 'Pilihan Menu Favorit'
+                    : 'Kategori $_selectedCategory',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
               const SizedBox(height: 12),
 
-              _buildMenuItemCard(
-                title: 'Iced Spanish Latte',
-                category: 'ESPRESSO BAR',
-                description: 'Espresso ganda, susu segar, dan krimer kental manis.',
-                price: 'Rp 35.000',
-              ),
-              const SizedBox(height: 12),
-              _buildMenuItemCard(
-                title: 'Almond Croissant',
-                category: 'FRESH BAKE',
-                description: 'Mentega Prancis AOP dengan taburan kacang almond renyah.',
-                price: 'Rp 30.000',
-              ),
-              const SizedBox(height: 12),
-              _buildMenuItemCard(
-                title: 'Single Origin Toraja',
-                category: 'MANUAL BREW',
-                description: 'Metode V60 dengan notes fruity dan acidity seimbang.',
-                price: 'Rp 38.000',
-              ),
+              // [6. TAMPILAN LOADING ATAU DAFTAR KARTU MENU]
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: CircularProgressIndicator(color: Color(0xFFB84A0F)),
+                  ),
+                )
+              else if (_filteredMenuItems.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: Text(
+                      'Belum ada menu di kategori ini.',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ),
+                )
+              else
+                ..._filteredMenuItems.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: _buildMenuItemCard(item: item),
+                  );
+                }).toList(),
             ],
           ),
         ),
@@ -107,31 +179,35 @@ class MenuScreen extends StatelessWidget {
     );
   }
 
+  // Chip Filter Kategori
   Widget _buildCategoryChip(String label, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFFB84A0F) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade300),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.black87,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedCategory = label;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFB84A0F) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildMenuItemCard({
-    required String title,
-    required String category,
-    required String description,
-    required String price,
-  }) {
+  // [7. KARTU MENU DENGAN DATA DARI COFFEEITEM]
+  Widget _buildMenuItemCard({required CoffeeItem item}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -147,52 +223,70 @@ class MenuScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.coffee, color: Colors.grey),
+          // Gambar menu produk
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: item.imageUrl.isNotEmpty
+                ? Image.network(
+                    item.imageUrl,
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.coffee, color: Colors.grey),
+                    ),
+                  )
+                : Container(
+                    width: 70,
+                    height: 70,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.coffee, color: Colors.grey),
+                  ),
           ),
           const SizedBox(width: 12),
+          // Rincian teks menu
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  category,
+                  item.category.toUpperCase(),
                   style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  title,
+                  item.name,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  description,
+                  item.description,
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  price,
+                  'Rp ${item.price}',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
                 ),
               ],
             ),
           ),
+          // Tombol tambah ke keranjang
           Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDECD0),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFDECD0),
               shape: BoxShape.circle,
             ),
             child: IconButton(
               icon: const Icon(Icons.add, size: 18, color: Color(0xFFB84A0F)),
-              onPressed: () {},
+              onPressed: () {
+                // Siap dihubungkan ke fitur keranjang
+              },
             ),
           ),
         ],
