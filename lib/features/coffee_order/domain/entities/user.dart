@@ -1,30 +1,30 @@
 class User {
-  String id;
-  String name;
-  String email;
-  String? phoneNumber;
-  int points;
+  final String id;
+  final String name;
+  final String email;
+  final String? phoneNumber;
+  final bool isMember;
 
   User({
     required this.id, 
     required this.name, 
     required this.email,
     this.phoneNumber,
-    this.points = 0,
+    this.isMember = false,
   });
 
   User copyWith({
     String? name,
     String? email,
     String? phoneNumber,
-    int? points,
+    bool? isMember,
   }) {
     return User(
       id: id,
       name: name ?? this.name,
       email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      points: points ?? this.points,
+      isMember: isMember ?? this.isMember,
     );
   }
 }

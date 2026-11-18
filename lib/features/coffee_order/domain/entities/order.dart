@@ -1,23 +1,22 @@
-import 'package:coffee_shop/features/coffee_order/domain/entities/cart_item.dart';
-import 'package:coffee_shop/features/coffee_order/domain/entities/table_item.dart';
-import 'package:coffee_shop/features/coffee_order/domain/entities/user.dart';
+import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
+import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
 
 class Order {
-  String id;
-  User user;
-  TableItem tableItem;
-  List<CartItem> items;
-  String status;
-  DateTime createdAt;
+  final String id;
+  final String userId;
+  final String tableId;
+  final List<CoffeeItem> items;
+  final double totalPrice;
+  final String orderStatus;
+  final Payment? payment;
 
   Order({
     required this.id,
-    required this.user,
-    required this.tableItem,
+    required this.userId,
+    required this.tableId,
     required this.items,
-    required this.status,
-    required this.createdAt,
+    required this.totalPrice,
+    required this.orderStatus,
+    this.payment,
   });
-
-  int get totalPrice => items.fold(0, (sum, item) => sum + item.subTotal);
 }

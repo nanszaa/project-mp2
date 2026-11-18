@@ -1,11 +1,11 @@
 class CoffeeItem {
-  String id;
-  String name;
-  String description;
-  int price;
-  String imageUrl;
-  String category;
-  bool isAvailable;
+  final String id;
+  final String name;
+  final String description;
+  final double price;
+  final String imageUrl;
+  final String category;
+  final bool isAvailable;
 
   CoffeeItem({
     required this.id,
