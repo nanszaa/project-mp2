@@ -13,7 +13,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-
   // Daftar kategori untuk filter
   final List<String> _categories = [
     'Semua Menu',
@@ -32,7 +31,7 @@ class _MenuScreenState extends State<MenuScreen> {
   void initState() {
     super.initState();
     widget.notifier.addListener(_onNotifierChanged);
-    widget.notifier.loadMenu(); // Panggil data repository saat layar dibuka
+    widget.notifier.loadMenu();
   }
 
   @override
@@ -46,7 +45,7 @@ class _MenuScreenState extends State<MenuScreen> {
     setState(() {
       _isLoading = widget.notifier.isLoading;
       // Ambil data menu asli dari notifier
-      // _allMenuItems = widget.coffeeNotifier.menuList; 
+      // _allMenuItems = widget.coffeeNotifier.menuList;
       // _filterMenuByCategory(_selectedCategory);
     });
   }
@@ -74,7 +73,7 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Atas Menu
+              // Header Atas Menu (Tetap Sesuai Desain Anda)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -144,7 +143,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Filter Kategori
+              // Filter Kategori (Tetap Sesuai Desain Anda)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -159,7 +158,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Judul Menu Sesuai Kategori
+              // Judul Menu Sesuai Kategori (Tetap Sesuai Desain Anda)
               Text(
                 _selectedCategory == 'Semua Menu'
                     ? 'Pilihan Menu Favorit'
@@ -172,31 +171,57 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 12),
 
-              // [6. TAMPILAN LOADING ATAU DAFTAR KARTU MENU]
-              if (_isLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40.0),
-                    child: CircularProgressIndicator(color: Color(0xFFB84A0F)),
-                  ),
-                )
-              else if (_filteredMenuItems.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24.0),
-                  child: Center(
-                    child: Text(
-                      'Belum ada menu di kategori ini.',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
-                    ),
-                  ),
-                )
-              else
-                ..._filteredMenuItems.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: _buildMenuItemCard(item: item),
+              // [BAGIAN LIST MENU YANG DIPERBAIKI DENGAN ANIMATEDBUILDER]
+              AnimatedBuilder(
+                animation: widget.notifier,
+                builder: (context, child) {
+                  final isLoading = widget.notifier.isLoading;
+                  // Gunakan _filteredMenuItems jika Anda memfilter berdasarkan kategori,
+                  // atau langsung widget.notifier.menuList jika ingin menampilkan semua data mentah dari API
+                  final menuList = widget.notifier.menuList;
+
+                  // 1. Kondisi saat sedang memuat data
+                  if (isLoading) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40.0),
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFB84A0F),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // 2. Kondisi saat data kosong
+                  if (menuList.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: Text(
+                          'Belum ada menu tersedia.',
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                      ),
+                    );
+                  }
+
+                  // 3. Kondisi saat data berhasil dimuat
+                  // Menggunakan ListView.builder dengan shrinkWrap & NeverScrollable
+                  // agar aman di dalam SingleChildScrollView utama.
+                  return ListView.builder(
+                    itemCount: menuList.length,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final item = menuList[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: _buildMenuItemCard(item: item),
+                      );
+                    },
                   );
-                }).toList(),
+                },
+              ),
             ],
           ),
         ),

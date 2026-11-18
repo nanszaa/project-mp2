@@ -39,6 +39,7 @@ class CoffeeNotifier extends ChangeNotifier {
 
     try {
       menuList = await getMenuUseCase.execute();
+      print('Menu loaded: ${menuList.length} items'); // Debugging: tampilkan jumlah item menu yang berhasil dimuat
     } catch (e) {
       errorMessage = e.toString();
     } finally {
