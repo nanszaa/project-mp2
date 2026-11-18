@@ -1,9 +1,9 @@
 // lib/infrastructure/repositories/coffee_repository_impl.dart
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
+import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
-import 'package:coffee_shop/features/coffee_order/domain/entities/table.dart';
-import 'package:coffee_shop/features/coffee_order/domain/repositories/CoffeeRepository.dart';
-import 'package:dartz/dartz.dart';
+import 'package:coffee_shop/features/coffee_order/domain/entities/table_number.dart';
+import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_repository.dart';
 
 class CoffeeRepositoryImpl implements CoffeeRepository {
   // Catatan: Nanti di sini kita akan menyuntikkan HTTP Client atau Service API dari dosen
@@ -35,10 +35,10 @@ class CoffeeRepositoryImpl implements CoffeeRepository {
   }
 
   @override
-  Future<Table> scanTable(String tableId) async {
+  Future<TableNumber> scanTable(String tableId) async {
     // Simulasi scan QR Meja
     await Future.delayed(const Duration(milliseconds: 500));
-    return Table(
+    return TableNumber(
       id: tableId,
       tableNumber: 'Meja 05',
       isOccupied: false,

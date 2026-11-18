@@ -1,9 +1,9 @@
-class Table {
+class TableNumber {
     final String id;
     final String tableNumber;
     final bool isOccupied;
 
-    Table({
+    TableNumber({
         required this.id,
         required this.tableNumber,
         required this.isOccupied,

@@ -1,5 +1,4 @@
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
-import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
 
 class Order {
   final String id;
@@ -8,7 +7,7 @@ class Order {
   final List<CoffeeItem> items;
   final double totalPrice;
   final String orderStatus;
-  final Payment? payment;
+  final String? payment;
 
   Order({
     required this.id,
