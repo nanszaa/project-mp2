@@ -4,7 +4,9 @@ import 'package:coffee_shop/features/coffee_order/domain/usecases/create_order_u
 import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/process_payment_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use_case.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/menu_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages..dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6F4E37)),
         useMaterial3: true,
       ),
-      home: MenuScreen(notifier: coffeeNotifier),
+      home: CartPages(),
     );
   }
 }

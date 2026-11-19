@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// Impor helper format rupiah yang sudah kita buat
+import 'package:coffee_shop/features/coffee_order/presentation/utils/currency_formatter.dart';
 
 class CartPages extends StatefulWidget {
   const CartPages({super.key});
@@ -8,7 +10,7 @@ class CartPages extends StatefulWidget {
 }
 
 class _CartPagesState extends State<CartPages> {
-  // Contoh kuantitas item dummy
+  // Jumlah kuantitas pesanan awal
   int qty1 = 1;
   int qty2 = 1;
 
@@ -17,6 +19,7 @@ class _CartPagesState extends State<CartPages> {
 
   @override
   Widget build(BuildContext context) {
+    // Menghitung subtotal secara otomatis berdasarkan jumlah pesanan
     int subtotal = (price1 * qty1) + (price2 * qty2);
 
     return Scaffold(
@@ -31,15 +34,18 @@ class _CartPagesState extends State<CartPages> {
               _buildTopBar(),
               const SizedBox(height: 16),
 
-              // 2. Cart Title & Table Info
+              // 2. Info Keranjang & Meja
               _buildCartHeader(),
               const SizedBox(height: 16),
 
-              // 3. List of Cart Items
+              // ==============================================================
+              // [PERUBAHAN BARU 1: DAFTAR MENU DENGAN KATEGORI (TANPA CATATAN)]
+              // ==============================================================
               _buildCartItemCard(
                 title: 'Iced Spanish Latte',
-                variants: 'Regular • Less Ice • Oat Milk',
+                category: 'ESPRESSO BAR', // Menggantikan catatan varian dengan kategori
                 price: price1,
+                imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500',
                 quantity: qty1,
                 onAdd: () => setState(() => qty1++),
                 onMinus: () => setState(() {
@@ -50,8 +56,9 @@ class _CartPagesState extends State<CartPages> {
               const SizedBox(height: 12),
               _buildCartItemCard(
                 title: 'Almond Croissant',
-                variants: 'Warmed • Extra Flakes',
+                category: 'FRESH BAKE', // Menggantikan catatan varian dengan kategori
                 price: price2,
+                imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500',
                 quantity: qty2,
                 onAdd: () => setState(() => qty2++),
                 onMinus: () => setState(() {
@@ -61,19 +68,21 @@ class _CartPagesState extends State<CartPages> {
               ),
               const SizedBox(height: 16),
 
-              // 4. Notes to Barista
+              // ==============================================================
+              // [SATU-SATUNYA TEMPAT CATATAN: CATATAN KE BARISTA]
+              // ==============================================================
               _buildBaristaNotesBox(),
               const SizedBox(height: 16),
 
-              // 5. Payment Summary
+              // 5. Ringkasan Pembayaran
               _buildPaymentSummary(subtotal),
               const SizedBox(height: 16),
 
-              // 6. Estimated Time Banner
+              // 6. Estimasi Waktu Penyajian
               _buildEstTimeBanner(),
               const SizedBox(height: 24),
 
-              // 7. Checkout Button
+              // 7. Tombol Pesan Sekarang
               _buildCheckoutButton(subtotal),
               const SizedBox(height: 20),
             ],
@@ -107,17 +116,13 @@ class _CartPagesState extends State<CartPages> {
             ),
           ],
         ),
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey[200],
-              ),
-              child: const Icon(Icons.search, size: 20, color: Colors.black87),
-            ),
-          ],
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey[200],
+          ),
+          child: const Icon(Icons.search, size: 20, color: Colors.black87),
         ),
       ],
     );
@@ -136,7 +141,7 @@ class _CartPagesState extends State<CartPages> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, size: 18),
-                onPressed: () {},
+                onPressed: () => Navigator.pop(context),
               ),
             ),
             const SizedBox(width: 12),
@@ -171,25 +176,31 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
+  // ==============================================================
+  // [PERUBAHAN BARU 2: PARAMETER VARIANTS DIHAPUS, DIGANTI CATEGORY]
+  // ==============================================================
   Widget _buildCartItemCard({
     required String title,
-    required String variants,
-    required int price,
+    required String category, // Parameter baru yang lebih rapi
+    required num price,
+    String imageUrl = '',
     required int quantity,
     required VoidCallback onAdd,
     required VoidCallback onMinus,
     required VoidCallback onDelete,
   }) {
+    final formattedPrice = formatRupiah(price);
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            spreadRadius: 1,
-            blurRadius: 5,
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
@@ -197,79 +208,122 @@ class _CartPagesState extends State<CartPages> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.coffee, color: Colors.grey),
+          // 1. Gambar Produk dengan Fallback Ikon
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    width: 64,
+                    height: 64,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 64,
+                      height: 64,
+                      color: const Color(0xFFEFECE6),
+                      child: const Icon(Icons.coffee, color: Colors.grey),
+                    ),
+                  )
+                : Container(
+                    width: 64,
+                    height: 64,
+                    color: const Color(0xFFEFECE6),
+                    child: const Icon(Icons.coffee, color: Colors.grey),
+                  ),
           ),
           const SizedBox(width: 12),
+
+          // 2. Rincian Nama, Kategori, dan Harga
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    InkWell(
-                      onTap: onDelete,
-                      child: const Icon(Icons.close, size: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
                 Text(
-                  variants,
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.black87,
+                  ),
                 ),
+                // Menampilkan Kategori Produk sebagai pengganti catatan varian
+                if (category.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    category.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[500],
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Rp $price',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          InkWell(
-                            onTap: onMinus,
-                            child: const Icon(Icons.remove, size: 16),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('$quantity', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ),
-                          InkWell(
-                            onTap: onAdd,
-                            child: const Icon(Icons.add, size: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                Text(
+                  formattedPrice,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
+          ),
+
+          // 3. Tombol Hapus (x) dan Stepper Kuantitas (- qty +)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              InkWell(
+                onTap: onDelete,
+                child: const Icon(Icons.close, size: 16, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9F6F0),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE0DDD7)),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: onMinus,
+                      borderRadius: BorderRadius.circular(16),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(Icons.remove, size: 14, color: Colors.black87),
+                      ),
+                    ),
+                    Text(
+                      '$quantity',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: onAdd,
+                      borderRadius: BorderRadius.circular(16),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Icon(Icons.add, size: 14, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
+  // Bagian Catatan Tunggal Khusus ke Barista
   Widget _buildBaristaNotesBox() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -342,7 +396,7 @@ class _CartPagesState extends State<CartPages> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Subtotal (2 Item)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              Text('Rp $subtotal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(formatRupiah(subtotal), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 8),
@@ -379,7 +433,7 @@ class _CartPagesState extends State<CartPages> {
                 ],
               ),
               Text(
-                'Rp $subtotal',
+                formatRupiah(subtotal),
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
               ),
             ],
@@ -436,7 +490,7 @@ class _CartPagesState extends State<CartPages> {
           Row(
             children: [
               Text(
-                'Rp $subtotal',
+                formatRupiah(subtotal),
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               ),
               const SizedBox(width: 4),
