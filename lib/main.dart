@@ -21,7 +21,7 @@ void main() {
   final processPayment = ProcessPaymentUseCase(repository);
   
   runApp(MyApp(
-    coffeeNotifier: CoffeeNotifier(
+    notifier: CoffeeNotifier(
       getMenuUseCase: getMenu,
       scanTableUseCase: scanTable,
       createOrderUseCase: createOrder,
@@ -31,9 +31,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final CoffeeNotifier coffeeNotifier;
+  final CoffeeNotifier notifier;
 
-  const MyApp({Key? key, required this.coffeeNotifier}) : super(key: key);
+  const MyApp({Key? key, required this.notifier}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6F4E37)),
         useMaterial3: true,
       ),
-      home: MenuScreen(notifier: coffeeNotifier,),
+      home: LoginPages(),
     );
   }
 }

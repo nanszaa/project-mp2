@@ -7,15 +7,27 @@ class RegisterPages extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F6F0), // Warna latar belakang krem hangat
+      backgroundColor: const Color(
+        0xFFF9F6F0,
+      ), // Warna latar belakang krem hangat
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, size: 18),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
               const SizedBox(height: 10),
-              
+
               // 1. Logo & Badge Atas
               Stack(
                 alignment: Alignment.bottomRight,
@@ -62,11 +74,7 @@ class RegisterPages extends StatelessWidget {
               const Text(
                 'Dine-in made effortless. Sign in to sync your party, split tabs, and reorder in seconds.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
-                  height: 1.4,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
               ),
               const SizedBox(height: 24),
 
@@ -87,7 +95,6 @@ class RegisterPages extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     const Text(
                       'Nama',
                       style: TextStyle(
@@ -101,16 +108,25 @@ class RegisterPages extends StatelessWidget {
 
                     TextField(
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.alternate_email, color: Colors.grey, size: 20),
+                        prefixIcon: const Icon(
+                          Icons.alternate_email,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         hintText: 'Peri',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF7F5F0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
 
@@ -130,16 +146,25 @@ class RegisterPages extends StatelessWidget {
 
                     TextField(
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.alternate_email, color: Colors.grey, size: 20),
+                        prefixIcon: const Icon(
+                          Icons.alternate_email,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         hintText: 'patron@gusteau.com',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF7F5F0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
 
@@ -156,21 +181,34 @@ class RegisterPages extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 8),
-                    
+
                     TextField(
                       obscureText: true,
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 20),
-                        suffixIcon: const Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.visibility_off_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         hintText: 'Masukkan password',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF7F5F0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
 
@@ -187,26 +225,39 @@ class RegisterPages extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 8),
-                    
+
                     TextField(
                       obscureText: true,
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 20),
-                        suffixIcon: const Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.visibility_off_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         hintText: 'Masukkan nomor telepon',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                         filled: true,
                         fillColor: const Color(0xFFF7F5F0),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 16),
-                    
+
                     // Tombol Create an Account
                     SizedBox(
                       width: double.infinity,
@@ -214,7 +265,9 @@ class RegisterPages extends StatelessWidget {
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => const HomePages()),
+                            MaterialPageRoute(
+                              builder: (context) => const HomePages(),
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(
@@ -231,7 +284,10 @@ class RegisterPages extends StatelessWidget {
                           children: const [
                             Text(
                               'Create an Account',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
