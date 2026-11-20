@@ -5,7 +5,7 @@ import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.da
 import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
 import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_repository.dart';
 
-// 1. Impor file CartPages
+// Impor file CartPages untuk navigasi keranjang
 import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -17,6 +17,7 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  // Daftar filter kategori
   final List<String> _categories = [
     'Semua Menu',
     'Espresso',
@@ -72,7 +73,9 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Atas Menu
+              // ==============================================================
+              // HEADER ATAS MENU (IKON SEARCH SUDAH DIHAPUS)
+              // ==============================================================
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -109,35 +112,54 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      // ==============================================================
-                      // IKON TAS BELANJA DIBUNGKUS GESTUREDETECTOR
-                      // ==============================================================
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CartPages(notifier: widget.notifier),
+                  
+                  // ==============================================================
+                  // TOMBOL KERANJANG DENGAN KURSOR TELUNJUK & BADGE NOTIFIKASI
+                  // ==============================================================
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click, // Mengubah kursor jadi jari telunjuk
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CartPages(notifier: widget.notifier),
+                          ),
+                        );
+                      },
+                      child: AnimatedBuilder(
+                        animation: widget.notifier,
+                        builder: (context, child) {
+                          final int totalCartItems = widget.notifier.cart.length;
+
+                          return Badge(
+                            // Tampilkan badge hanya bila keranjang berisi menu (> 0)
+                            isLabelVisible: totalCartItems > 0,
+                            label: Text(
+                              '$totalCartItems',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            backgroundColor: const Color(0xFFB84A0F),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey[200],
+                              ),
+                              child: const Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 20,
+                                color: Colors.black87,
+                              ),
                             ),
                           );
                         },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey[200],
-                          ),
-                          child: const Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 20,
-                            color: Colors.black87,
-                          ),
-                        ),
                       ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -171,7 +193,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Bagian List Menu
+              // Bagian Daftar Menu
               AnimatedBuilder(
                 animation: widget.notifier,
                 builder: (context, child) {
@@ -224,28 +246,32 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
+  // Chip Filter Kategori dengan Kursor Pointer
   Widget _buildCategoryChip(String label, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedCategory = label;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFB84A0F) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.grey.shade300,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedCategory = label;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFB84A0F) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey.shade300,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
           ),
         ),
       ),
