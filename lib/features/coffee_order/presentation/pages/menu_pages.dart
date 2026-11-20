@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/widgets/Menu_Item.dart';
-import 'package:flutter/material.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
 import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_repository.dart';
+
+// 1. Impor file CartPages
+import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.dart';
 
 class MenuScreen extends StatefulWidget {
   final CoffeeNotifier notifier;
@@ -14,7 +17,6 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
-  // Daftar kategori untuk filter
   final List<String> _categories = [
     'Semua Menu',
     'Espresso',
@@ -24,7 +26,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
   String _selectedCategory = 'Semua Menu';
 
-  // [3. VARIABEL STATE DATA & LOADING]
   List<CoffeeItem> _allMenuItems = [];
   bool _isLoading = true;
 
@@ -42,16 +43,13 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _onNotifierChanged() {
-    // Sinkronkan state lokal dengan data dari CoffeeNotifier
+    if (!mounted) return;
     setState(() {
       _isLoading = widget.notifier.isLoading;
-      // Ambil data menu asli dari notifier
-      // _allMenuItems = widget.coffeeNotifier.menuList;
-      // _filterMenuByCategory(_selectedCategory);
+      _allMenuItems = widget.notifier.menuList;
     });
   }
 
-  // [5. FILTER MENU BERDASARKAN KATEGORI AKTIF]
   List<CoffeeItem> get _filteredMenuItems {
     if (_selectedCategory == 'Semua Menu') {
       return _allMenuItems;
@@ -74,7 +72,7 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Atas Menu (Tetap Sesuai Desain Anda)
+              // Header Atas Menu
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -113,29 +111,30 @@ class _MenuScreenState extends State<MenuScreen> {
                   ),
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[200],
-                        ),
-                        child: const Icon(
-                          Icons.search,
-                          size: 20,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[200],
-                        ),
-                        child: const Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 20,
-                          color: Colors.black87,
+                      // ==============================================================
+                      // IKON TAS BELANJA DIBUNGKUS GESTUREDETECTOR
+                      // ==============================================================
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  CartPages(notifier: widget.notifier),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey[200],
+                          ),
+                          child: const Icon(
+                            Icons.shopping_bag_outlined,
+                            size: 20,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ],
@@ -144,7 +143,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Filter Kategori (Tetap Sesuai Desain Anda)
+              // Filter Kategori
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -159,7 +158,7 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Judul Menu Sesuai Kategori (Tetap Sesuai Desain Anda)
+              // Judul Menu Sesuai Kategori
               Text(
                 _selectedCategory == 'Semua Menu'
                     ? 'Pilihan Menu Favorit'
@@ -172,16 +171,15 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 12),
 
-              // [BAGIAN LIST MENU YANG DIPERBAIKI DENGAN ANIMATEDBUILDER]
+              // Bagian List Menu
               AnimatedBuilder(
                 animation: widget.notifier,
                 builder: (context, child) {
                   final isLoading = widget.notifier.isLoading;
-                  // Gunakan _filteredMenuItems jika Anda memfilter berdasarkan kategori,
-                  // atau langsung widget.notifier.menuList jika ingin menampilkan semua data mentah dari API
-                  final menuList = widget.notifier.menuList;
+                  final menuList = _filteredMenuItems.isNotEmpty
+                      ? _filteredMenuItems
+                      : widget.notifier.menuList;
 
-                  // 1. Kondisi saat sedang memuat data
                   if (isLoading) {
                     return const Center(
                       child: Padding(
@@ -193,7 +191,6 @@ class _MenuScreenState extends State<MenuScreen> {
                     );
                   }
 
-                  // 2. Kondisi saat data kosong
                   if (menuList.isEmpty) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
@@ -206,9 +203,6 @@ class _MenuScreenState extends State<MenuScreen> {
                     );
                   }
 
-                  // 3. Kondisi saat data berhasil dimuat
-                  // Menggunakan ListView.builder dengan shrinkWrap & NeverScrollable
-                  // agar aman di dalam SingleChildScrollView utama.
                   return ListView.builder(
                     itemCount: menuList.length,
                     shrinkWrap: true,
@@ -230,7 +224,6 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  // Chip Filter Kategori
   Widget _buildCategoryChip(String label, bool isSelected) {
     return GestureDetector(
       onTap: () {

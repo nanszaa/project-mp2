@@ -1,92 +1,240 @@
 import 'package:flutter/material.dart';
-// Impor helper format rupiah yang sudah kita buat
+
+// [1. IMPORT ENTITAS, NOTIFIER, DAN HELPER FORMAT RUPIAH]
+import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/utils/currency_formatter.dart';
 
 class CartPages extends StatefulWidget {
-  const CartPages({super.key});
+  // Menerima notifier langsung dari halaman pemanggil (MenuScreen)
+  final CoffeeNotifier notifier;
+
+  const CartPages({Key? key, required this.notifier}) : super(key: key);
 
   @override
   State<CartPages> createState() => _CartPagesState();
 }
 
 class _CartPagesState extends State<CartPages> {
-  // Jumlah kuantitas pesanan awal
-  int qty1 = 1;
-  int qty2 = 1;
+  // Controller untuk membaca teks dari kotak Catatan ke Barista
+  final TextEditingController _baristaNotesController = TextEditingController();
 
-  final int price1 = 35000;
-  final int price2 = 30000;
+  @override
+  void initState() {
+    super.initState();
+    // Dengarkan setiap ada perubahan data keranjang pada CoffeeNotifier
+    widget.notifier.addListener(_onCartStateChanged);
+  }
+
+  @override
+  void dispose() {
+    // Lepaskan listener dan controller untuk mencegah kebocoran memori
+    widget.notifier.removeListener(_onCartStateChanged);
+    _baristaNotesController.dispose();
+    super.dispose();
+  }
+
+  // Fungsi sinkronisasi: Memperbarui tampilan saat item ditambah/dikurang/dihapus
+  void _onCartStateChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  // ==============================================================
+  // LOGIKA PENGELOMPOKAN MENU & KUANTITAS
+  // ==============================================================
+
+  // Menghitung berapa kali tiap menu dimasukkan ke dalam keranjang
+  Map<String, int> _getItemQuantities() {
+    final Map<String, int> quantities = {};
+    for (var item in widget.notifier.cart) {
+      quantities[item.id] = (quantities[item.id] ?? 0) + 1;
+    }
+    return quantities;
+  }
+
+  // Mengambil daftar menu unik tanpa duplikasi kartu
+  List<CoffeeItem> _getUniqueCartItems() {
+    final Map<String, CoffeeItem> uniqueMap = {};
+    for (var item in widget.notifier.cart) {
+      uniqueMap[item.id] = item;
+    }
+    return uniqueMap.values.toList();
+  }
+
+  // Menghapus seluruh porsi suatu menu dari keranjang (untuk tombol tanda silang 'x')
+  void _deleteEntireItemFromCart(CoffeeItem item) {
+    while (widget.notifier.cart.any((element) => element.id == item.id)) {
+      widget.notifier.removeFromCart(
+        widget.notifier.cart.firstWhere((element) => element.id == item.id),
+      );
+    }
+  }
+
+  // ==============================================================
+  // AKSI PEMESANAN (CHECKOUT)
+  // ==============================================================
+  Future<void> _handleCheckout(double total) async {
+    // Pastikan meja aktif tersedia (jika null, gunakan default '04' untuk simulasi)
+    final tableId = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
+
+    // Panggil fungsi checkoutOrder di dalam notifier
+    final success = await widget.notifier.checkoutOrder('CUST-001');
+
+    if (!mounted) return;
+
+    if (success) {
+      // Tampilkan dialog pop-up sukses jika pesanan berhasil terbuat
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
+              SizedBox(width: 8),
+              Text('Pesanan Diterima!'),
+            ],
+          ),
+          content: Text(
+            'Pesananmu untuk $tableId berhasil dikirim ke barista.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${_baristaNotesController.text.isEmpty ? "-" : _baristaNotesController.text}',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx); // Tutup pop-up
+                Navigator.pop(context); // Kembali ke halaman menu
+              },
+              child: const Text('Kembali ke Menu', style: TextStyle(color: Color(0xFF4A3319), fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Tampilkan snackbar merah jika gagal membuat pesanan
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.notifier.errorMessage.isNotEmpty
+                ? widget.notifier.errorMessage
+                : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan.',
+          ),
+          backgroundColor: Colors.red[700],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Menghitung subtotal secara otomatis berdasarkan jumlah pesanan
-    int subtotal = (price1 * qty1) + (price2 * qty2);
+    final uniqueItems = _getUniqueCartItems();
+    final quantities = _getItemQuantities();
+    final double subtotal = widget.notifier.totalPrice;
+    final int totalMenuCount = widget.notifier.cart.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Top Bar / Header
-              _buildTopBar(),
-              const SizedBox(height: 16),
+        child: uniqueItems.isEmpty
+            // Jika keranjang kosong, tampilkan layar Empty State
+            ? _buildEmptyState()
+            // Jika ada menu, tampilkan rincian pesanan
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Header Atas
+                    _buildTopBar(),
+                    const SizedBox(height: 16),
 
-              // 2. Info Keranjang & Meja
-              _buildCartHeader(),
-              const SizedBox(height: 16),
+                    // 2. Info Keranjang & Meja
+                    _buildCartHeader(totalMenuCount),
+                    const SizedBox(height: 16),
 
-              // ==============================================================
-              // [PERUBAHAN BARU 1: DAFTAR MENU DENGAN KATEGORI (TANPA CATATAN)]
-              // ==============================================================
-              _buildCartItemCard(
-                title: 'Iced Spanish Latte',
-                category: 'ESPRESSO BAR', // Menggantikan catatan varian dengan kategori
-                price: price1,
-                imageUrl: 'https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500',
-                quantity: qty1,
-                onAdd: () => setState(() => qty1++),
-                onMinus: () => setState(() {
-                  if (qty1 > 1) qty1--;
-                }),
-                onDelete: () {},
+                    // 3. Daftar Kartu Menu Dinamis
+                    ...uniqueItems.map((item) {
+                      final qty = quantities[item.id] ?? 1;
+                      return _buildCartItemCard(
+                        item: item,
+                        quantity: qty,
+                        onAdd: () => widget.notifier.addToCart(item),
+                        onMinus: () => widget.notifier.removeFromCart(item),
+                        onDelete: () => _deleteEntireItemFromCart(item),
+                      );
+                    }).toList(),
+
+                    const SizedBox(height: 16),
+
+                    // 4. Satu-satunya Catatan: Catatan ke Barista
+                    _buildBaristaNotesBox(),
+                    const SizedBox(height: 16),
+
+                    // 5. Ringkasan Pembayaran dengan formatRupiah
+                    _buildPaymentSummary(subtotal, totalMenuCount),
+                    const SizedBox(height: 16),
+
+                    // 6. Estimasi Waktu
+                    _buildEstTimeBanner(),
+                    const SizedBox(height: 24),
+
+                    // 7. Tombol Pesan Sekarang
+                    _buildCheckoutButton(subtotal),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              _buildCartItemCard(
-                title: 'Almond Croissant',
-                category: 'FRESH BAKE', // Menggantikan catatan varian dengan kategori
-                price: price2,
-                imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500',
-                quantity: qty2,
-                onAdd: () => setState(() => qty2++),
-                onMinus: () => setState(() {
-                  if (qty2 > 1) qty2--;
-                }),
-                onDelete: () {},
+      ),
+    );
+  }
+
+  // ==============================================================
+  // WIDGET-WIDGET TAMPILAN (KOMPONEN UI)
+  // ==============================================================
+
+  // Tampilan ramah ketika belum ada menu yang dimasukkan
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.brown[50],
+                shape: BoxShape.circle,
               ),
-              const SizedBox(height: 16),
-
-              // ==============================================================
-              // [SATU-SATUNYA TEMPAT CATATAN: CATATAN KE BARISTA]
-              // ==============================================================
-              _buildBaristaNotesBox(),
-              const SizedBox(height: 16),
-
-              // 5. Ringkasan Pembayaran
-              _buildPaymentSummary(subtotal),
-              const SizedBox(height: 16),
-
-              // 6. Estimasi Waktu Penyajian
-              _buildEstTimeBanner(),
-              const SizedBox(height: 24),
-
-              // 7. Tombol Pesan Sekarang
-              _buildCheckoutButton(subtotal),
-              const SizedBox(height: 20),
-            ],
-          ),
+              child: const Icon(
+                Icons.shopping_bag_outlined,
+                size: 64,
+                color: Color(0xFFB84A0F),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Keranjangmu Masih Kosong',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Belum ada menu yang kamu pilih. Yuk, temukan aneka kopi dan roti lezat di menu!',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 13),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4A3319),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Lihat Menu Kopi', style: TextStyle(color: Colors.white)),
+            ),
+          ],
         ),
       ),
     );
@@ -128,7 +276,10 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
-  Widget _buildCartHeader() {
+  Widget _buildCartHeader(int totalItems) {
+    // Ambil nomor meja aktif dari notifier
+    final tableLabel = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -154,7 +305,7 @@ class _CartPagesState extends State<CartPages> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '• Dine-in • Meja 04',
+                  '• Dine-in • $tableLabel',
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
@@ -167,29 +318,24 @@ class _CartPagesState extends State<CartPages> {
             color: const Color(0xFFFDECD0),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Text(
-            '2 Menu',
-            style: TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 12),
+          child: Text(
+            '$totalItems Menu',
+            style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
       ],
     );
   }
 
-  // ==============================================================
-  // [PERUBAHAN BARU 2: PARAMETER VARIANTS DIHAPUS, DIGANTI CATEGORY]
-  // ==============================================================
   Widget _buildCartItemCard({
-    required String title,
-    required String category, // Parameter baru yang lebih rapi
-    required num price,
-    String imageUrl = '',
+    required CoffeeItem item,
     required int quantity,
     required VoidCallback onAdd,
     required VoidCallback onMinus,
     required VoidCallback onDelete,
   }) {
-    final formattedPrice = formatRupiah(price);
+    // MENGGUNAKAN formatRupiah yang sudah kita buat
+    final formattedPrice = formatRupiah(item.price);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -208,12 +354,12 @@ class _CartPagesState extends State<CartPages> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Gambar Produk dengan Fallback Ikon
+          // Gambar menu produk
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: imageUrl.isNotEmpty
+            child: item.imageUrl.isNotEmpty
                 ? Image.network(
-                    imageUrl,
+                    item.imageUrl,
                     width: 64,
                     height: 64,
                     fit: BoxFit.cover,
@@ -233,24 +379,23 @@ class _CartPagesState extends State<CartPages> {
           ),
           const SizedBox(width: 12),
 
-          // 2. Rincian Nama, Kategori, dan Harga
+          // Rincian teks: Nama, Kategori (pengganti catatan per item), dan Harga
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  item.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                     color: Colors.black87,
                   ),
                 ),
-                // Menampilkan Kategori Produk sebagai pengganti catatan varian
-                if (category.isNotEmpty) ...[
+                if (item.category.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Text(
-                    category.toUpperCase(),
+                    item.category.toUpperCase(),
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -272,7 +417,7 @@ class _CartPagesState extends State<CartPages> {
             ),
           ),
 
-          // 3. Tombol Hapus (x) dan Stepper Kuantitas (- qty +)
+          // Tombol Hapus (x) dan Stepper Kuantitas (- qty +)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -323,7 +468,6 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
-  // Bagian Catatan Tunggal Khusus ke Barista
   Widget _buildBaristaNotesBox() {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -352,6 +496,7 @@ class _CartPagesState extends State<CartPages> {
           ),
           const SizedBox(height: 8),
           TextField(
+            controller: _baristaNotesController,
             maxLines: 2,
             style: const TextStyle(fontSize: 12),
             decoration: InputDecoration(
@@ -371,7 +516,7 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
-  Widget _buildPaymentSummary(int subtotal) {
+  Widget _buildPaymentSummary(double subtotal, int totalCount) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -395,7 +540,8 @@ class _CartPagesState extends State<CartPages> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Subtotal (2 Item)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('Subtotal ($totalCount Item)', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              // Menggunakan formatRupiah
               Text(formatRupiah(subtotal), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -432,6 +578,7 @@ class _CartPagesState extends State<CartPages> {
                   Text('Sudah termasuk PB1 & servis', style: TextStyle(fontSize: 10, color: Colors.grey)),
                 ],
               ),
+              // Menggunakan formatRupiah
               Text(
                 formatRupiah(subtotal),
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
@@ -466,38 +613,53 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
-  Widget _buildCheckoutButton(int subtotal) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF4A3319),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.bolt, color: Colors.white, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Pesan Sekarang',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+  Widget _buildCheckoutButton(double subtotal) {
+    final bool isLoading = widget.notifier.isLoading;
+
+    return InkWell(
+      onTap: isLoading ? null : () => _handleCheckout(subtotal),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF4A3319),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: isLoading
+            ? const Center(
+                child: SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.bolt, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Pesan Sekarang',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      // Menggunakan formatRupiah
+                      Text(
+                        formatRupiah(subtotal),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          Row(
-            children: [
-              Text(
-                formatRupiah(subtotal),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
-            ],
-          ),
-        ],
       ),
     );
   }
