@@ -7,7 +7,7 @@ import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use
 import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/login_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/menu_pages.dart';
-import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages..dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
