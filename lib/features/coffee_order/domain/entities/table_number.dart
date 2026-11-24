@@ -4,8 +4,8 @@ class TableNumber {
     final bool isOccupied;
 
     TableNumber({
-        required this.id,
-        required this.tableNumber,
-        required this.isOccupied,
+      required this.id,
+      required this.tableNumber,
+      required this.isOccupied,
     });
 }
