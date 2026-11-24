@@ -19,23 +19,28 @@ class CoffeeItem {
 
   factory CoffeeItem.fromMap(Map<String, dynamic> map) {
     return CoffeeItem(
-      id: map["id"],
-      name: map["name"],
-      description: map["description"],
-      price: map["price"].toDouble(),
-      imageUrl: map["imageUrl"],
-      category: map["category"],
-      isAvailable: map["isAvailable"],
+      id: map['id']?.toString() ?? '',
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      price: (map['price'] as num?)?.toDouble() ?? 0.0,
+      imageUrl: map['imageUrl'] ?? map['image_url'] ?? '',
+      category: map['category'] ?? '',
+      isAvailable: map['isAvailable'] ?? map['is_available'] ?? true,
     );
   }
 
+  factory CoffeeItem.fromJson(Map<String, dynamic> json) =>
+      CoffeeItem.fromMap(json);
+
   Map<String, dynamic> toMap() => {
-    "id": id,
-    "name": name,
-    "description": description,
-    "price": price,
-    "imageUrl": imageUrl,
-    "category": category,
-    "isAvailable": isAvailable,
+    'id': id,
+    'name': name,
+    'description': description,
+    'price': price,
+    'imageUrl': imageUrl,
+    'category': category,
+    'isAvailable': isAvailable,
   };
+
+  Map<String, dynamic> toJson() => toMap();
 }
