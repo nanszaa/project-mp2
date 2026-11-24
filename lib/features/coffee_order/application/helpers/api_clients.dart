@@ -52,4 +52,15 @@ class ApiClient {
       throw Exception(errorMessage);
     }
   }
+
+  Future<Response> patch(String path, dynamic data) async {
+    try {
+      final response = await dio.patch(path, data: data);
+      return response;
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data?['message'] ?? e.message;
+      throw Exception(errorMessage);
+    }
+  }
+  
 }
