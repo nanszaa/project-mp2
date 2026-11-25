@@ -106,21 +106,48 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[200],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CartPages(notifier: widget.notifier),
                         ),
-                        child: const Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 20,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
+                      );
+                    },
+                    child: AnimatedBuilder(
+                      animation: widget.notifier,
+                      builder: (context, _) {
+                        final int totalCartItems = widget.notifier.cart.length;
+
+                        return Badge(
+                          isLabelVisible: totalCartItems > 0,
+                          label: Text(
+                            '$totalCartItems',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          backgroundColor: const Color(0xFFB84A0F),
+                          offset: const Offset(4, -4),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey[200],
+                            ),
+                            child: const Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 20,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
