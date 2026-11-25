@@ -112,14 +112,14 @@ class _CartPagesState extends State<CartPages> {
         ),
       );
     } else {
+      final String errorText = (widget.notifier.errorMessage != null &&
+          widget.notifier.errorMessage!.isNotEmpty)
+          ? widget.notifier.errorMessage!
+          : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan';
       // Tampilkan snackbar merah jika gagal membuat pesanan
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            widget.notifier.errorMessage.isNotEmpty
-                ? widget.notifier.errorMessage
-                : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan.',
-          ),
+          content: Text(errorText),
           backgroundColor: Colors.red[700],
         ),
       );

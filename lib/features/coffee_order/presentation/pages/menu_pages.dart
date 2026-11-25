@@ -155,7 +155,7 @@ class _MenuScreenState extends State<MenuScreen> {
               const SizedBox(height: 12),
 
               // [6. TAMPILAN LOADING ATAU DAFTAR KARTU MENU]
-              if (_isLoading)
+              if (widget.notifier.isLoading)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40.0),

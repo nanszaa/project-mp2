@@ -60,9 +60,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Jika token null atau kosong, masuk ke Login; jika ada, langsung ke MenuScreen
-      home: (token == null || token!.isEmpty)
-          ? const LoginPages()
-          : MenuScreen(notifier: coffeeNotifier),
+      home: MenuScreen(notifier: coffeeNotifier),
     );
   }
 }
