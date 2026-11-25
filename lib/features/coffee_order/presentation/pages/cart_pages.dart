@@ -75,16 +75,31 @@ class _CartPagesState extends State<CartPages> {
   // AKSI PEMESANAN (CHECKOUT)
   // ==============================================================
   Future<void> _handleCheckout(double total) async {
-    // Pastikan meja aktif tersedia (jika null, gunakan default '04' untuk simulasi)
-    final tableId = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
+    // Validasi isi keranjang belanja
+    if (widget.notifier.cart.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keranjang belanja masih kosong!')),
+      );
+      return;
+    }
 
-    // Panggil fungsi checkoutOrder di dalam notifier
-    final success = await widget.notifier.checkoutOrder('CUST-001');
+    // Pastikan meja aktif tersedia (fallback ke 'Meja 04' untuk simulasi)
+    final tableId = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
+    final notes = _baristaNotesController.text.trim();
+
+    // Panggil fungsi checkoutOrder menggunakan named parameter
+    final success = await widget.notifier.checkoutOrder(
+      userId: 'CUST-001',
+      notes: notes,
+    );
 
     if (!mounted) return;
 
     if (success) {
-      // Tampilkan dialog pop-up sukses jika pesanan berhasil terbuat
+      // Bersihkan teks catatan setelah berhasil
+      _baristaNotesController.clear();
+
+      // Tampilkan dialog pop-up sukses
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -94,11 +109,11 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
               SizedBox(width: 8),
-              Text('Pesanan Diterima!'),
+              Text('Pesanan Berhasil Dibuat!'),
             ],
           ),
           content: Text(
-            'Pesananmu untuk $tableId berhasil dikirim ke barista.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${_baristaNotesController.text.isEmpty ? "-" : _baristaNotesController.text}',
+            'Pesananmu untuk $tableId berhasil dibuat dan tercatat di sistem.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}\n\nSilakan menunggu di meja, pesananmu sedang disiapkan.',
           ),
           actions: [
             TextButton(
@@ -106,16 +121,23 @@ class _CartPagesState extends State<CartPages> {
                 Navigator.pop(ctx); // Tutup pop-up
                 Navigator.pop(context); // Kembali ke halaman menu
               },
-              child: const Text('Kembali ke Menu', style: TextStyle(color: Color(0xFF4A3319), fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Kembali ke Menu',
+                style: TextStyle(
+                  color: Color(0xFF4A3319),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
       );
     } else {
       final String errorText = (widget.notifier.errorMessage != null &&
-          widget.notifier.errorMessage!.isNotEmpty)
+              widget.notifier.errorMessage!.isNotEmpty)
           ? widget.notifier.errorMessage!
           : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan';
+
       // Tampilkan snackbar merah jika gagal membuat pesanan
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -167,7 +189,7 @@ class _CartPagesState extends State<CartPages> {
 
                     const SizedBox(height: 16),
 
-                    // 4. Satu-satunya Catatan: Catatan ke Barista
+                    // 4. Catatan ke Barista
                     _buildBaristaNotesBox(),
                     const SizedBox(height: 16),
 
@@ -193,7 +215,6 @@ class _CartPagesState extends State<CartPages> {
   // WIDGET-WIDGET TAMPILAN (KOMPONEN UI)
   // ==============================================================
 
-  // Tampilan ramah ketika belum ada menu yang dimasukkan
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -277,7 +298,6 @@ class _CartPagesState extends State<CartPages> {
   }
 
   Widget _buildCartHeader(int totalItems) {
-    // Ambil nomor meja aktif dari notifier
     final tableLabel = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
 
     return Row(
@@ -334,7 +354,6 @@ class _CartPagesState extends State<CartPages> {
     required VoidCallback onMinus,
     required VoidCallback onDelete,
   }) {
-    // MENGGUNAKAN formatRupiah yang sudah kita buat
     final formattedPrice = formatRupiah(item.price);
 
     return Container(
@@ -354,7 +373,6 @@ class _CartPagesState extends State<CartPages> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gambar menu produk
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: item.imageUrl.isNotEmpty
@@ -378,8 +396,6 @@ class _CartPagesState extends State<CartPages> {
                   ),
           ),
           const SizedBox(width: 12),
-
-          // Rincian teks: Nama, Kategori (pengganti catatan per item), dan Harga
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,8 +432,6 @@ class _CartPagesState extends State<CartPages> {
               ],
             ),
           ),
-
-          // Tombol Hapus (x) dan Stepper Kuantitas (- qty +)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -475,7 +489,11 @@ class _CartPagesState extends State<CartPages> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -488,7 +506,10 @@ class _CartPagesState extends State<CartPages> {
                 children: [
                   Icon(Icons.edit_note, size: 18, color: Colors.black87),
                   SizedBox(width: 6),
-                  Text('Catatan ke Barista', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    'Catatan ke Barista',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
                 ],
               ),
               Text('Opsional', style: TextStyle(color: Colors.grey, fontSize: 11)),
@@ -523,7 +544,11 @@ class _CartPagesState extends State<CartPages> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -532,7 +557,10 @@ class _CartPagesState extends State<CartPages> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Text('Ringkasan Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(
+                'Ringkasan Pembayaran',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               Icon(Icons.receipt_long_outlined, size: 18, color: Colors.grey),
             ],
           ),
@@ -540,9 +568,14 @@ class _CartPagesState extends State<CartPages> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Subtotal ($totalCount Item)', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              // Menggunakan formatRupiah
-              Text(formatRupiah(subtotal), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(
+                'Subtotal ($totalCount Item)',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                formatRupiah(subtotal),
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -551,12 +584,21 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Row(
                 children: [
-                  const Text('Pajak & Layanan (10%)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    'Pajak & Layanan (10%)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   const SizedBox(width: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(4)),
-                    child: const Text('Termasuk', style: TextStyle(fontSize: 9, color: Colors.black54)),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Termasuk',
+                      style: TextStyle(fontSize: 9, color: Colors.black54),
+                    ),
                   ),
                 ],
               ),
@@ -573,15 +615,24 @@ class _CartPagesState extends State<CartPages> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('Total Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(
+                    'Total Pembayaran',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   SizedBox(height: 2),
-                  Text('Sudah termasuk PB1 & servis', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text(
+                    'Sudah termasuk PB1 & servis',
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ),
-              // Menggunakan formatRupiah
               Text(
                 formatRupiah(subtotal),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -604,10 +655,24 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Icon(Icons.access_time, size: 16, color: Colors.brown),
               SizedBox(width: 8),
-              Text('Estimasi Pembuatan', style: TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.w500)),
+              Text(
+                'Estimasi Pembuatan',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.brown,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
-          Text('~ 6 - 8 Menit', style: TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.bold)),
+          Text(
+            '~ 6 - 8 Menit',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.brown,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -643,16 +708,23 @@ class _CartPagesState extends State<CartPages> {
                       SizedBox(width: 8),
                       Text(
                         'Pesan Sekarang',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
                   Row(
                     children: [
-                      // Menggunakan formatRupiah
                       Text(
                         formatRupiah(subtotal),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
