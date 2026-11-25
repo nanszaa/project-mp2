@@ -1,5 +1,6 @@
 import 'package:coffee_shop/features/coffee_order/application/helpers/user_info.dart';
 import 'package:coffee_shop/features/coffee_order/application/services/coffee_service.dart';
+import 'package:coffee_shop/features/coffee_order/application/services/order_service.dart';
 import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/login_pages.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
       scanTableUseCase: scanTable,
       createOrderUseCase: createOrder,
       processPaymentUseCase: processPayment,
+      orderService: OrderService(), 
     ),
   ));
 }
