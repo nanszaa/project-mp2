@@ -1,3 +1,4 @@
+import 'package:coffee_shop/features/coffee_order/application/services/order_service.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
@@ -9,17 +10,28 @@ import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use
 import 'package:flutter/material.dart';
 
 class CoffeeNotifier extends ChangeNotifier {
+  final OrderService orderService;
+
   final GetMenuUseCase getMenuUseCase;
   final ScanTableUseCase scanTableUseCase;
   final CreateOrderUseCase createOrderUseCase;
   final ProcessPaymentUseCase processPaymentUseCase;
 
   CoffeeNotifier({
+    required this.orderService,
     required this.getMenuUseCase,
     required this.scanTableUseCase,
     required this.createOrderUseCase,
     required this.processPaymentUseCase,
   });
+
+  bool isLoading = false;
+  String? errorMessage;
+  bool isSuccess = false;
+
+  bool get _isLoading => isLoading;
+  String? get _errorMessage => errorMessage;
+  bool get _isSuccess => isSuccess;
 
   // State variable
   List<CoffeeItem> menuList = [];
@@ -27,9 +39,6 @@ class CoffeeNotifier extends ChangeNotifier {
   TableNumber? activeTable;
   Order? currentOrder;
   Payment? currentPayment;
-
-  bool isLoading = false;
-  String errorMessage = '';
 
   // ambil menu
   Future<void> loadMenu() async {
@@ -39,7 +48,9 @@ class CoffeeNotifier extends ChangeNotifier {
 
     try {
       menuList = await getMenuUseCase.execute();
-      print('Menu loaded: ${menuList.length} items'); // Debugging: tampilkan jumlah item menu yang berhasil dimuat
+      print(
+        'Menu loaded: ${menuList.length} items',
+      ); // Debugging: tampilkan jumlah item menu yang berhasil dimuat
     } catch (e) {
       errorMessage = e.toString();
     } finally {

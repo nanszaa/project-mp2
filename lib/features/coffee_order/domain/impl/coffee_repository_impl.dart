@@ -15,7 +15,7 @@ class CoffeeRepositoryImpl implements CoffeeRepository {
   @override
   Future<List<CoffeeItem>> getCoffeeMenu() async {
     // Simulasi data menu kopi (Nanti diganti dengan pemanggilan API dosen)
-    return await coffeeService.fetchCoffeeMenu();
+    return await coffeeService.getCoffee();
   }
 
   @override
