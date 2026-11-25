@@ -1,6 +1,7 @@
 import 'package:coffee_shop/features/coffee_order/application/services/login_service.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/register_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages.dart';
 import 'package:flutter/material.dart';
 
 class LoginPages extends StatefulWidget {
@@ -120,27 +121,33 @@ class _LoginPagesState extends State<LoginPages> {
 
   Widget _nameTextField() {
     return TextFormField(
-      decoration: InputDecoration(
-        prefixIcon: const Icon(
-          Icons.person,
-          color: Colors.grey,
-          size: 20,
-        ),
-      ),
       controller: _nameCtrl,
+      decoration: InputDecoration(
+        labelText: 'Name',
+        prefixIcon: const Icon(Icons.person, color: Colors.grey, size: 20),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Username tidak boleh kosong';
+        }
+        return null;
+      },
     );
   }
 
   Widget _passwordTextField() {
     return TextFormField(
-      decoration: InputDecoration(
-        prefixIcon: const Icon(
-          Icons.password,
-          color: Colors.grey,
-          size: 20,
-        ),
-      ),
       controller: _passwordCtrl,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: const Icon(Icons.password, color: Colors.grey, size: 20),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Username tidak boleh kosong';
+        }
+        return null;
+      },
     );
   }
 
@@ -151,55 +158,50 @@ class _LoginPagesState extends State<LoginPages> {
         child: const Text("Sign up"),
         onPressed: () {
           Navigator.push(
-            context, 
-            MaterialPageRoute(
-              builder: (context) => RegisterPages()
-            ),
+            context,
+            MaterialPageRoute(builder: (context) => RegisterPages()),
           );
-        }, 
+        },
       ),
     );
   }
 
   Widget _tombolSignIn() {
-    return Container(
+    return SizedBox(
+      width: double.infinity,
       child: ElevatedButton(
         child: const Text("Sign in"),
         onPressed: () async {
-          String name = _nameCtrl.text;
-          String password = _passwordCtrl.text;
+          if (_formKey.currentState!.validate()) {
+            String name = _nameCtrl.text;
+            String password = _passwordCtrl.text;
 
-          await LoginService().login(name, password).then((value) {
-            if (value == true) {
+            bool isSuccess = await LoginService().login(name, password);
+
+            if (isSuccess) {
               Navigator.pushReplacement(
-                context, 
-                MaterialPageRoute(
-                  builder: (context) => HomePages()
-                ),
+                context,
+                MaterialPageRoute(builder: (context) => const HomePages()),
               );
             } else {
-              AlertDialog alertDialog = AlertDialog(
-                content: const Text('Username atau password tidak valid.'),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }, 
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green
-                    ),
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-
               showDialog(
-                context: context, 
-                builder: (context) => alertDialog,
+                context: context,
+                builder: (context) => AlertDialog(
+                  content: const Text('Username atau password tidak valid.'),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
               );
             }
-          });
-        }, 
+          }
+        },
       ),
     );
   }
