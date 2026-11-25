@@ -32,8 +32,7 @@ Future<void> main() async {
       getMenuUseCase: getMenu,
       scanTableUseCase: scanTable,
       createOrderUseCase: createOrder,
-      processPaymentUseCase: processPayment,
-      orderService: OrderService(), 
+      processPaymentUseCase: processPayment, 
     ),
   ));
 }
