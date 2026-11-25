@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/widgets/Menu_Item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
-import 'package:coffee_shop/features/coffee_order/domain/impl/coffee_repository_impl.dart';
-import 'package:coffee_shop/features/coffee_order/domain/repositories/coffee_repository.dart';
 
 // Impor file CartPages untuk navigasi keranjang
 import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.dart';
@@ -28,7 +26,6 @@ class _MenuScreenState extends State<MenuScreen> {
   String _selectedCategory = 'Semua Menu';
 
   List<CoffeeItem> _allMenuItems = [];
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -46,7 +43,6 @@ class _MenuScreenState extends State<MenuScreen> {
   void _onNotifierChanged() {
     if (!mounted) return;
     setState(() {
-      _isLoading = widget.notifier.isLoading;
       _allMenuItems = widget.notifier.menuList;
     });
   }

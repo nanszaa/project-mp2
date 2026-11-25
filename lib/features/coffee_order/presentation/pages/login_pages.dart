@@ -1,4 +1,5 @@
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/pages/register_pages.dart';
 import 'package:flutter/material.dart';
 
 class LoginPages extends StatelessWidget {
@@ -47,44 +48,11 @@ class LoginPages extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-
-              // Badge Tabletop Quick-Sync
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFECE6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text(
-                      'TABLETOP QUICK-SYNC',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 16),
 
               // Judul & Subjudul
               const Text(
-                'Gusteau Dining',
+                'Kohi',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -146,30 +114,14 @@ class LoginPages extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
 
-                    // Password Field & Forgot Password
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Password',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFB84A0F),
-                            ),
-                          ),
-                        ),
-                      ],
+                    // Password Field
+                    const Text(
+                      'Password',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -222,62 +174,23 @@ class LoginPages extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
 
-                    // Divider "OR CONTINUE WITH"
-                    Row(
-                      children: const [
-                        Expanded(child: Divider(color: Colors.black12)),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            'OR CONTINUE WITH',
-                            style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Expanded(child: Divider(color: Colors.black12)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Tombol Continue with Google
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF7F5F0),
-                          foregroundColor: Colors.black87,
-                          side: BorderSide.none,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.g_mobiledata, size: 28, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text(
-                              'Continue with Google',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Tombol Continue with Apple
+                    const SizedBox(height: 8),
+                    
+                    // Tombol Sign Up
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RegisterPages()),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2B2B2B),
+                          backgroundColor: const Color(0xFFB84A0F),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -286,11 +199,9 @@ class LoginPages extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
-                            Icon(Icons.apple, size: 20, color: Colors.white),
-                            SizedBox(width: 8),
                             Text(
-                              'Continue with Apple',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                              'Sign Up',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -299,67 +210,6 @@ class LoginPages extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // 3. Bagian Bawah (Skip to Table QR Scan & Guest)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFFD3B89E), shape: BoxShape.circle)),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Already at your table?',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ),
-                  Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFFD3B89E), shape: BoxShape.circle)),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Tombol Skip to Table QR Scan
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEFECE6),
-                    foregroundColor: const Color(0xFFB84A0F),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.qr_code_scanner, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Skip to Table QR Scan',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Browse Menu as Guest
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'Browse Menu as Guest',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
