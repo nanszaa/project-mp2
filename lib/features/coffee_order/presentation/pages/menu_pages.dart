@@ -73,9 +73,7 @@ class _MenuScreenState extends State<MenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ==============================================================
-              // HEADER ATAS MENU (IKON SEARCH SUDAH DIHAPUS)
-              // ==============================================================
+              // Header Atas Menu
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -112,54 +110,21 @@ class _MenuScreenState extends State<MenuScreen> {
                       ),
                     ],
                   ),
-                  
-                  // ==============================================================
-                  // TOMBOL KERANJANG DENGAN KURSOR TELUNJUK & BADGE NOTIFIKASI
-                  // ==============================================================
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click, // Mengubah kursor jadi jari telunjuk
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CartPages(notifier: widget.notifier),
-                          ),
-                        );
-                      },
-                      child: AnimatedBuilder(
-                        animation: widget.notifier,
-                        builder: (context, child) {
-                          final int totalCartItems = widget.notifier.cart.length;
-
-                          return Badge(
-                            // Tampilkan badge hanya bila keranjang berisi menu (> 0)
-                            isLabelVisible: totalCartItems > 0,
-                            label: Text(
-                              '$totalCartItems',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            backgroundColor: const Color(0xFFB84A0F),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.grey[200],
-                              ),
-                              child: const Icon(
-                                Icons.shopping_bag_outlined,
-                                size: 20,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          );
-                        },
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[200],
+                        ),
+                        child: const Icon(
+                          Icons.shopping_bag_outlined,
+                          size: 20,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -193,52 +158,31 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Bagian Daftar Menu
-              AnimatedBuilder(
-                animation: widget.notifier,
-                builder: (context, child) {
-                  final isLoading = widget.notifier.isLoading;
-                  final menuList = _filteredMenuItems.isNotEmpty
-                      ? _filteredMenuItems
-                      : widget.notifier.menuList;
-
-                  if (isLoading) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 40.0),
-                        child: CircularProgressIndicator(
-                          color: Color(0xFFB84A0F),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (menuList.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.0),
-                      child: Center(
-                        child: Text(
-                          'Belum ada menu tersedia.',
-                          style: TextStyle(color: Colors.grey, fontSize: 13),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    itemCount: menuList.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final item = menuList[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: MenuItem(notifier: widget.notifier, item: item),
-                      );
-                    },
+              // [6. TAMPILAN LOADING ATAU DAFTAR KARTU MENU]
+              if (_isLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: CircularProgressIndicator(color: Color(0xFFB84A0F)),
+                  ),
+                )
+              else if (_filteredMenuItems.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: Text(
+                      'Belum ada menu di kategori ini.',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  ),
+                )
+              else
+                ..._filteredMenuItems.map((item) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: MenuItem(notifier: widget.notifier, item: item),
                   );
-                },
-              ),
+                }).toList(),
             ],
           ),
         ),
