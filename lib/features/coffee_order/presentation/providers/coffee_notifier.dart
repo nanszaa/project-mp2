@@ -1,4 +1,6 @@
+import 'package:coffee_shop/features/coffee_order/application/services/coffee_service.dart';
 import 'package:coffee_shop/features/coffee_order/application/services/order_service.dart';
+import 'package:coffee_shop/features/coffee_order/application/services/table_number_service.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
@@ -29,16 +31,71 @@ class CoffeeNotifier extends ChangeNotifier {
   String? errorMessage;
   bool isSuccess = false;
 
-  bool get _isLoading => isLoading;
-  String? get _errorMessage => errorMessage;
-  bool get _isSuccess => isSuccess;
-
   // State variable
   List<CoffeeItem> menuList = [];
   List<CoffeeItem> cart = [];
   TableNumber? activeTable;
   Order? currentOrder;
   Payment? currentPayment;
+
+  Future<void> createOrder({
+    required String userId,
+    required String tableId,
+    required List<CoffeeItem> items,
+    required double totalPrice,
+    required String orderStatus,
+    Payment? payment,
+  }) async {
+    isLoading = true;
+    errorMessage = null;
+    isSuccess = false;
+    notifyListeners();
+
+    final success = await orderService.createOrder(
+      userId: userId,
+      tableId: tableId,
+      items: items,
+      totalPrice: totalPrice,
+      orderStatus: orderStatus,
+      payment: payment,
+    );
+
+    isLoading = false;
+    if (success) {
+      isSuccess = true;
+    } else {
+      errorMessage = 'Gagal membuat pesanan. Silahkan coba lagi.';
+    }
+    notifyListeners();
+  }
+
+  Future<void> scanTable(String? rawScanValue) async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+    
+    if (rawScanValue == null || rawScanValue.trim().isEmpty) {
+      throw Exception('QR code tidak sesuai.');
+    }
+
+    try {
+      final String tableId = _extractTableId(rawScanValue.trim());
+      activeTable = await TableNumberService().getTableById(tableId);
+    } catch (e) {
+      throw Exception('Format QR meja tidak Valid.');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  String _extractTableId(String rawValue) {
+    final uri = Uri.tryParse(rawValue);
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      return uri.pathSegments.last;
+    }
+    return rawValue;
+  }
 
   // ambil menu
   Future<void> loadMenu() async {
@@ -47,26 +104,10 @@ class CoffeeNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      menuList = await getMenuUseCase.execute();
+      menuList = await CoffeeService().getCoffee();
       print(
         'Menu loaded: ${menuList.length} items',
       ); // Debugging: tampilkan jumlah item menu yang berhasil dimuat
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // scan meja
-  Future<void> scanTable(String tableId) async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      activeTable = await scanTableUseCase.execute(tableId);
     } catch (e) {
       errorMessage = e.toString();
     } finally {
