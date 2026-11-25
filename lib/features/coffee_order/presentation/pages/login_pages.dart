@@ -1,22 +1,35 @@
+import 'package:coffee_shop/features/coffee_order/application/services/login_service.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/register_pages.dart';
 import 'package:flutter/material.dart';
 
-class LoginPages extends StatelessWidget {
-  const LoginPages({super.key});
+class LoginPages extends StatefulWidget {
+  const LoginPages({Key? key}) : super(key: key);
+
+  @override
+  _LoginPagesState createState() => _LoginPagesState();
+}
+
+class _LoginPagesState extends State<LoginPages> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F6F0), // Warna latar belakang krem hangat
+      backgroundColor: const Color(
+        0xFFF9F6F0,
+      ), // Warna latar belakang krem hangat
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 10),
-              
+
               // 1. Logo & Badge Atas
               Stack(
                 alignment: Alignment.bottomRight,
@@ -63,11 +76,7 @@ class LoginPages extends StatelessWidget {
               const Text(
                 'Dine-in made effortless. Sign in to sync your party, split tabs, and reorder in seconds.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
-                  height: 1.4,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.4),
               ),
               const SizedBox(height: 24),
 
@@ -85,134 +94,112 @@ class LoginPages extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Email Address Field
-                    const Text(
-                      'Email Address',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                child: Form(
+                  key: _formKey,
+                  child: Container(
+                    child: Column(
+                      children: [
+                        _nameTextField(),
+                        const SizedBox(height: 16),
+                        _passwordTextField(),
+                        const SizedBox(height: 16),
+                        _tombolSignIn(),
+                        const SizedBox(height: 16),
+                        _tombolSignUp(),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.alternate_email, color: Colors.grey, size: 20),
-                        hintText: 'patron@gusteau.com',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-                        filled: true,
-                        fillColor: const Color(0xFFF7F5F0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Password Field
-                    const Text(
-                      'Password',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey, size: 20),
-                        suffixIcon: const Icon(Icons.visibility_off_outlined, color: Colors.grey, size: 20),
-                        hintText: 'Enter your password',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-                        filled: true,
-                        fillColor: const Color(0xFFF7F5F0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Tombol Sign In
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomePages()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB84A0F),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Sign In',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(width: 6),
-                            Icon(Icons.arrow_forward, size: 18),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-                    
-                    // Tombol Sign Up
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegisterPages()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB84A0F),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Text(
-                              'Sign Up',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _nameTextField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        prefixIcon: const Icon(
+          Icons.person,
+          color: Colors.grey,
+          size: 20,
+        ),
+      ),
+      controller: _nameCtrl,
+    );
+  }
+
+  Widget _passwordTextField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        prefixIcon: const Icon(
+          Icons.password,
+          color: Colors.grey,
+          size: 20,
+        ),
+      ),
+      controller: _passwordCtrl,
+    );
+  }
+
+  Widget _tombolSignUp() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      child: ElevatedButton(
+        child: const Text("Sign up"),
+        onPressed: () {
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => RegisterPages()
+            ),
+          );
+        }, 
+      ),
+    );
+  }
+
+  Widget _tombolSignIn() {
+    return Container(
+      child: ElevatedButton(
+        child: const Text("Sign in"),
+        onPressed: () async {
+          String name = _nameCtrl.text;
+          String password = _passwordCtrl.text;
+
+          await LoginService().login(name, password).then((value) {
+            if (value == true) {
+              Navigator.pushReplacement(
+                context, 
+                MaterialPageRoute(
+                  builder: (context) => HomePages()
+                ),
+              );
+            } else {
+              AlertDialog alertDialog = AlertDialog(
+                content: const Text('Username atau password tidak valid.'),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green
+                    ),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+
+              showDialog(
+                context: context, 
+                builder: (context) => alertDialog,
+              );
+            }
+          });
+        }, 
       ),
     );
   }

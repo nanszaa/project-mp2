@@ -8,9 +8,6 @@ class CoffeeService {
     try {
       // 1. Perbaiki typo: gunakan 'coffee-item'
       final Response response = await ApiClient().get('coffee-item');
-      
-      print('STATUS API: ${response.statusCode}');
-      print('RESPON API: ${response.data}');
 
       // 2. Antisipasi jika data dibungkus map atau langsung list
       dynamic rawData = response.data;
@@ -19,11 +16,7 @@ class CoffeeService {
       }
 
       if (rawData is List) {
-        List<CoffeeItem> result = rawData
-            .map((map) => CoffeeItem.fromMap(map as Map<String, dynamic>))
-            .toList();
-        print('BERHASIL PARSING: ${result.length} item ditemukan');
-        return result;
+        return rawData.map((item) => CoffeeItem.fromMap(item as Map<String, dynamic>)).toList();
       }
 
       return [];
