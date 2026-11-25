@@ -109,11 +109,11 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
               SizedBox(width: 8),
-              Text('Pesanan Diterima!'),
+              Text('Pesanan Berhasil Dibuat!'),
             ],
           ),
           content: Text(
-            'Pesananmu untuk $tableId berhasil dikirim ke barista.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}',
+            'Pesananmu untuk $tableId berhasil dibuat dan tercatat di sistem.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}\n\nSilakan menunggu di meja, pesananmu sedang disiapkan.',
           ),
           actions: [
             TextButton(
