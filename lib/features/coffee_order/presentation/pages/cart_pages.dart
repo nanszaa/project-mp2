@@ -13,7 +13,7 @@ class CartPages extends StatefulWidget {
 
   @override
   State<CartPages> createState() => _CartPagesState();
-}
+} 
 
 class _CartPagesState extends State<CartPages> {
   // Controller untuk membaca teks dari kotak Catatan ke Barista

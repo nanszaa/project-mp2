@@ -61,7 +61,7 @@ class LoginPages extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Dine-in made effortless. Sign in to sync your party, split tabs, and reorder in seconds.',
+                'Selamat Datang, Silahkan Login',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -101,7 +101,7 @@ class LoginPages extends StatelessWidget {
                     TextField(
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.alternate_email, color: Colors.grey, size: 20),
-                        hintText: 'patron@gusteau.com',
+                        hintText: 'arta@gmail.com',
                         hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                         filled: true,
                         fillColor: const Color(0xFFF7F5F0),
