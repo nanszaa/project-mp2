@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:coffee_shop/features/coffee_order/application/services/coffee_service.dart';
+import 'package:coffee_shop/features/coffee_order/application/services/table_number_service.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
@@ -6,7 +9,6 @@ import 'package:coffee_shop/features/coffee_order/domain/usecases/create_order_u
 import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/process_payment_use_case.dart';
 import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use_case.dart';
-import 'package:flutter/material.dart';
 
 class CoffeeNotifier extends ChangeNotifier {
   final GetMenuUseCase getMenuUseCase;
@@ -21,6 +23,10 @@ class CoffeeNotifier extends ChangeNotifier {
     required this.processPaymentUseCase,
   });
 
+  bool isLoading = false;
+  String? errorMessage;
+  bool isSuccess = false;
+
   // State variable
   List<CoffeeItem> menuList = [];
   List<CoffeeItem> cart = [];
@@ -28,43 +34,10 @@ class CoffeeNotifier extends ChangeNotifier {
   Order? currentOrder;
   Payment? currentPayment;
 
-  bool isLoading = false;
-  String errorMessage = '';
+  // Helper untuk mendapatkan nomor meja aktif di UI
+  String get tableNumber => activeTable?.tableNumber ?? '';
 
-  // ambil menu
-  Future<void> loadMenu() async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      menuList = await getMenuUseCase.execute();
-      print('Menu loaded: ${menuList.length} items'); // Debugging: tampilkan jumlah item menu yang berhasil dimuat
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // scan meja
-  Future<void> scanTable(String tableId) async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      activeTable = await scanTableUseCase.execute(tableId);
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  // kelola cart
+  // Kelola Cart
   void addToCart(CoffeeItem item) {
     cart.add(item);
     notifyListeners();
@@ -75,15 +48,84 @@ class CoffeeNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearCart() {
+    cart.clear();
+    notifyListeners();
+  }
+
   double get totalPrice {
     return cart.fold(0, (sum, item) => sum + item.price);
   }
 
-  // buat pesanan
-  Future<bool> checkoutOrder(String userId) async {
-    if (activeTable == null || cart.isEmpty) return false;
+  // Ambil Menu
+  Future<void> loadMenu() async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    try {
+      menuList = await CoffeeService().getCoffee();
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Scan / Ambil Data Meja
+  Future<void> scanTable(String? rawScanValue) async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    if (rawScanValue == null || rawScanValue.trim().isEmpty) {
+      isLoading = false;
+      errorMessage = 'QR code tidak sesuai.';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      final String tableId = _extractTableId(rawScanValue.trim());
+      activeTable = await TableNumberService().getTableById(tableId);
+    } catch (e) {
+      errorMessage = 'Format QR meja tidak valid.';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  String _extractTableId(String rawValue) {
+    final uri = Uri.tryParse(rawValue);
+    if (uri != null && uri.pathSegments.isNotEmpty) {
+      return uri.pathSegments.last;
+    }
+    return rawValue;
+  }
+
+  // Checkout Pesanan
+  Future<bool> checkoutOrder({
+    required String userId,
+    String notes = '',
+  }) async {
+    // 1. Validasi Meja
+    if (activeTable == null) {
+      errorMessage = 'Silakan pilih atau scan meja terlebih dahulu.';
+      notifyListeners();
+      return false;
+    }
+
+    // 2. Validasi Keranjang
+    if (cart.isEmpty) {
+      errorMessage = 'Keranjang belanja masih kosong.';
+      notifyListeners();
+      return false;
+    }
 
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
@@ -94,9 +136,14 @@ class CoffeeNotifier extends ChangeNotifier {
         items: List.from(cart),
         totalPrice: totalPrice,
         orderStatus: 'Pending',
+        notes: notes,
       );
 
       currentOrder = await createOrderUseCase.execute(newOrder);
+
+      // Bersihkan keranjang saat order sudah tercatat
+      cart.clear();
+
       isLoading = false;
       notifyListeners();
       return true;
@@ -108,11 +155,16 @@ class CoffeeNotifier extends ChangeNotifier {
     }
   }
 
-  // proses pembayaran
+  // Proses Pembayaran
   Future<bool> processPayment(String method) async {
-    if (currentOrder == null) return false;
+    if (currentOrder == null) {
+      errorMessage = 'Tidak ada pesanan aktif untuk dibayar.';
+      notifyListeners();
+      return false;
+    }
 
     isLoading = true;
+    errorMessage = null;
     notifyListeners();
 
     try {
@@ -126,7 +178,6 @@ class CoffeeNotifier extends ChangeNotifier {
       );
 
       currentPayment = await processPaymentUseCase.execute(payment);
-      cart.clear();
       isLoading = false;
       notifyListeners();
       return true;
