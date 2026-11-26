@@ -1,3 +1,4 @@
+import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
 import 'package:flutter/material.dart';
 
 // [1. IMPORT ENTITAS, NOTIFIER, DAN HELPER FORMAT RUPIAH]
@@ -71,82 +72,6 @@ class _CartPagesState extends State<CartPages> {
     }
   }
 
-  // ==============================================================
-  // AKSI PEMESANAN (CHECKOUT)
-  // ==============================================================
-  Future<void> _handleCheckout(double total) async {
-    // Validasi isi keranjang belanja
-    if (widget.notifier.cart.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keranjang belanja masih kosong!')),
-      );
-      return;
-    }
-
-    // Pastikan meja aktif tersedia (fallback ke 'Meja 04' untuk simulasi)
-    final tableId = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
-    final notes = _baristaNotesController.text.trim();
-
-    // Panggil fungsi checkoutOrder menggunakan named parameter
-    final success = await widget.notifier.checkoutOrder(
-      userId: 'CUST-001',
-      notes: notes,
-    );
-
-    if (!mounted) return;
-
-    if (success) {
-      // Bersihkan teks catatan setelah berhasil
-      _baristaNotesController.clear();
-
-      // Tampilkan dialog pop-up sukses
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
-              SizedBox(width: 8),
-              Text('Pesanan Berhasil Dibuat!'),
-            ],
-          ),
-          content: Text(
-            'Pesananmu untuk $tableId berhasil dibuat dan tercatat di sistem.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}\n\nSilakan menunggu di meja, pesananmu sedang disiapkan.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx); // Tutup pop-up
-                Navigator.pop(context); // Kembali ke halaman menu
-              },
-              child: const Text(
-                'Kembali ke Menu',
-                style: TextStyle(
-                  color: Color(0xFF4A3319),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      final String errorText = (widget.notifier.errorMessage != null &&
-              widget.notifier.errorMessage!.isNotEmpty)
-          ? widget.notifier.errorMessage!
-          : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan';
-
-      // Tampilkan snackbar merah jika gagal membuat pesanan
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorText),
-          backgroundColor: Colors.red[700],
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +127,7 @@ class _CartPagesState extends State<CartPages> {
                     const SizedBox(height: 24),
 
                     // 7. Tombol Pesan Sekarang
-                    _buildCheckoutButton(subtotal),
+                    _checkoutBtn(subtotal),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -249,11 +174,19 @@ class _CartPagesState extends State<CartPages> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4A3319),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('Lihat Menu Kopi', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Lihat Menu Kopi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -273,14 +206,24 @@ class _CartPagesState extends State<CartPages> {
                 color: Colors.brown[50],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.coffee, color: Color(0xFF4A3319), size: 20),
+              child: const Icon(
+                Icons.coffee,
+                color: Color(0xFF4A3319),
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kohi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Pesanan', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  'Kohi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text(
+                  'Pesanan',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ],
@@ -340,7 +283,11 @@ class _CartPagesState extends State<CartPages> {
           ),
           child: Text(
             '$totalItems Menu',
-            style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.brown,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
         ),
       ],
@@ -452,8 +399,15 @@ class _CartPagesState extends State<CartPages> {
                       onTap: onMinus,
                       borderRadius: BorderRadius.circular(16),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.remove, size: 14, color: Colors.black87),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Icon(
+                          Icons.remove,
+                          size: 14,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Text(
@@ -468,7 +422,10 @@ class _CartPagesState extends State<CartPages> {
                       onTap: onAdd,
                       borderRadius: BorderRadius.circular(16),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Icon(Icons.add, size: 14, color: Colors.black87),
                       ),
                     ),
@@ -512,7 +469,10 @@ class _CartPagesState extends State<CartPages> {
                   ),
                 ],
               ),
-              Text('Opsional', style: TextStyle(color: Colors.grey, fontSize: 11)),
+              Text(
+                'Opsional',
+                style: TextStyle(color: Colors.grey, fontSize: 11),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -521,7 +481,8 @@ class _CartPagesState extends State<CartPages> {
             maxLines: 2,
             style: const TextStyle(fontSize: 12),
             decoration: InputDecoration(
-              hintText: 'Contoh: Pisahkan gula untuk latte, croissant dipanaskan sedang...',
+              hintText:
+                  'Contoh: Pisahkan gula untuk latte, croissant dipanaskan sedang...',
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 11),
               filled: true,
               fillColor: const Color(0xFFF9F9F9),
@@ -574,7 +535,10 @@ class _CartPagesState extends State<CartPages> {
               ),
               Text(
                 formatRupiah(subtotal),
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -590,7 +554,10 @@ class _CartPagesState extends State<CartPages> {
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(4),
@@ -602,7 +569,10 @@ class _CartPagesState extends State<CartPages> {
                   ),
                 ],
               ),
-              const Text('Rp 0', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text(
+                'Rp 0',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const Padding(
@@ -678,12 +648,66 @@ class _CartPagesState extends State<CartPages> {
     );
   }
 
-  Widget _buildCheckoutButton(double subtotal) {
-    final bool isLoading = widget.notifier.isLoading;
+  Widget _checkoutBtn(double subtotal) {
+    return ElevatedButton(
+      onPressed: widget.notifier.isLoading
+          ? null
+          : () async {
+              final notes = _baristaNotesController.text.trim();
+              final bool success = await widget.notifier.checkout(
+                notes: notes,
+              );
+              if (!context.mounted) return;
 
-    return InkWell(
-      onTap: isLoading ? null : () => _handleCheckout(subtotal),
-      borderRadius: BorderRadius.circular(16),
+              if (success) {
+                _baristaNotesController.clear();
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
+                        SizedBox(width: 8),
+                        Text('Pesanan Berhasil Dibuat!'),
+                      ],
+                    ),
+                    content: Text(
+                      'Pesananmu berhasil dibuat dan tercatat di sistem.\nTotal: ${formatRupiah(subtotal)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}\n\nSilakan menunggu di meja, pesananmu sedang disiapkan.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx); // Tutup pop-up
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier)),
+                          );
+                        },
+                        child: const Text(
+                          'Kembali ke Beranda',
+                          style: TextStyle(
+                            color: Color(0xFF4A3319),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      widget.notifier.errorMessage ?? 'Gagal membuat pesanan',
+                    ),
+                  ),
+                );
+              }
+            },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -691,12 +715,15 @@ class _CartPagesState extends State<CartPages> {
           color: const Color(0xFF4A3319),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: isLoading
+        child: widget.notifier.isLoading
             ? const Center(
                 child: SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
                 ),
               )
             : Row(
@@ -727,7 +754,11 @@ class _CartPagesState extends State<CartPages> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ],

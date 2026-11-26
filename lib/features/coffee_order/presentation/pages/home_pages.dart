@@ -1,15 +1,25 @@
+import 'package:coffee_shop/features/coffee_order/presentation/pages/menu_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
 class HomePages extends StatefulWidget {
-  const HomePages({Key? key}) : super(key: key);
+  final CoffeeNotifier notifier;
+  const HomePages({Key? key, required this.notifier}) : super(key: key);
 
   @override
   _HomePagesState createState() => _HomePagesState();
 }
 
 class _HomePagesState extends State<HomePages> {
-  
+
+  @override
+  void initState() {
+    super.initState();
+    widget.notifier.loadToken();
+    widget.notifier.loadUsername();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +34,7 @@ class _HomePagesState extends State<HomePages> {
               _buildTopHeader(),
               const SizedBox(height: 20),
               // 2. Greeting & Unscanned Badge
-              _buildGreetingSection(),
+              _buildGreetingSection(widget.notifier.token, widget.notifier.username),
               const SizedBox(height: 16),
               // 3. Scan QR Banner Card (Primary Action)
               _buildScanQrBanner(),
@@ -117,16 +127,19 @@ class _HomePagesState extends State<HomePages> {
     );
   }
 
-  Widget _buildGreetingSection() {
+  Widget _buildGreetingSection(String? token, String? username) {
+    final bool isScanned = token != null && token.isNotEmpty;
+    final String displayName = (username != null && username.isNotEmpty) ? username : 'CoffeeLover';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Hello, Foodie! 👋',
+          children: [
+            Text( 
+              'Hello, $displayName 👋',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -143,7 +156,9 @@ class _HomePagesState extends State<HomePages> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFEFECE6),
+            color: isScanned
+                ? const Color(0xFFE6F4EA)
+                : const Color(0xFFEFECE6),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
@@ -151,14 +166,14 @@ class _HomePagesState extends State<HomePages> {
               Container(
                 width: 6,
                 height: 6,
-                decoration: const BoxDecoration(
-                  color: Colors.amber,
+                decoration: BoxDecoration(
+                  color: isScanned ? Colors.green : Colors.amber,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 6),
-              const Text(
-                'Belum Scan Meja',
+              Text(
+                isScanned ? 'Meja Aktif' : 'Belum Scan Meja',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -237,7 +252,10 @@ class _HomePagesState extends State<HomePages> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ScannerPages()),
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ScannerPages(notifier: widget.notifier),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(
@@ -480,7 +498,12 @@ class _HomePagesState extends State<HomePages> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MenuScreen(notifier: widget.notifier)),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFB84A0F),
                 foregroundColor: Colors.white,

@@ -1,3 +1,5 @@
+import 'package:coffee_shop/features/coffee_order/application/helpers/user_info.dart';
+import 'package:coffee_shop/features/coffee_order/application/services/order_service.dart';
 import 'package:flutter/material.dart';
 import 'package:coffee_shop/features/coffee_order/application/services/coffee_service.dart';
 import 'package:coffee_shop/features/coffee_order/application/services/table_number_service.dart';
@@ -5,26 +7,17 @@ import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.da
 import 'package:coffee_shop/features/coffee_order/domain/entities/order.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/table_number.dart';
-import 'package:coffee_shop/features/coffee_order/domain/usecases/create_order_use_case.dart';
-import 'package:coffee_shop/features/coffee_order/domain/usecases/get_menu_use_case.dart';
-import 'package:coffee_shop/features/coffee_order/domain/usecases/process_payment_use_case.dart';
-import 'package:coffee_shop/features/coffee_order/domain/usecases/scan_table_use_case.dart';
 
 class CoffeeNotifier extends ChangeNotifier {
-  final GetMenuUseCase getMenuUseCase;
-  final ScanTableUseCase scanTableUseCase;
-  final CreateOrderUseCase createOrderUseCase;
-  final ProcessPaymentUseCase processPaymentUseCase;
-
-  CoffeeNotifier({
-    required this.getMenuUseCase,
-    required this.scanTableUseCase,
-    required this.createOrderUseCase,
-    required this.processPaymentUseCase,
-  });
-
+  // INIT VARIABLE
   bool isLoading = false;
   String? errorMessage;
+
+  String token = "";
+  String userId = "";
+  String username = "";
+  String member = "";
+
   bool isSuccess = false;
 
   // State variable
@@ -36,6 +29,70 @@ class CoffeeNotifier extends ChangeNotifier {
 
   // Helper untuk mendapatkan nomor meja aktif di UI
   String get tableNumber => activeTable?.tableNumber ?? '';
+
+  Future<void> loadToken() async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    try {
+      final String? savedToken = await UserInfo().getToken();
+      token = savedToken ?? '';
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  Future<void> loadUser() async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    try {
+      final String? savedUserId = await UserInfo().getUserID();
+      userId = savedUserId ?? '';
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadUsername() async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    try {
+      final String? savedUsername = await UserInfo().getUsername();
+      username = savedUsername ?? '';
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+  
+  Future<void> loadMember() async {
+    isLoading = true;
+    errorMessage = '';
+    notifyListeners();
+
+    try {
+      final String? savedMember = await UserInfo().getMember();
+      member = savedMember ?? '';
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // Kelola Cart
   void addToCart(CoffeeItem item) {
@@ -106,18 +163,18 @@ class CoffeeNotifier extends ChangeNotifier {
   }
 
   // Checkout Pesanan
-  Future<bool> checkoutOrder({
-    required String userId,
+  Future<bool> checkout({
     String notes = '',
   }) async {
-    // 1. Validasi Meja
-    if (activeTable == null) {
-      errorMessage = 'Silakan pilih atau scan meja terlebih dahulu.';
+    final String userId = await UserInfo().getUserID() ?? '';
+
+    // Validasi user
+    if (userId.isEmpty) {
+      errorMessage = 'Silahkan login terlebih dahulu';
       notifyListeners();
       return false;
     }
-
-    // 2. Validasi Keranjang
+    // Validasi Keranjang
     if (cart.isEmpty) {
       errorMessage = 'Keranjang belanja masih kosong.';
       notifyListeners();
@@ -129,17 +186,17 @@ class CoffeeNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final newOrder = Order(
+      final Order order = Order(
         id: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
         userId: userId,
-        tableId: activeTable!.id,
+        tableId: activeTable?.id,
         items: List.from(cart),
         totalPrice: totalPrice,
         orderStatus: 'Pending',
         notes: notes,
       );
 
-      currentOrder = await createOrderUseCase.execute(newOrder);
+      await OrderService().create(order);
 
       // Bersihkan keranjang saat order sudah tercatat
       cart.clear();
@@ -156,36 +213,36 @@ class CoffeeNotifier extends ChangeNotifier {
   }
 
   // Proses Pembayaran
-  Future<bool> processPayment(String method) async {
-    if (currentOrder == null) {
-      errorMessage = 'Tidak ada pesanan aktif untuk dibayar.';
-      notifyListeners();
-      return false;
-    }
+  // Future<bool> processPayment(String method) async {
+  //   if (currentOrder == null) {
+  //     errorMessage = 'Tidak ada pesanan aktif untuk dibayar.';
+  //     notifyListeners();
+  //     return false;
+  //   }
 
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+  //   isLoading = true;
+  //   errorMessage = null;
+  //   notifyListeners();
 
-    try {
-      final payment = Payment(
-        id: 'PAY-${DateTime.now().millisecondsSinceEpoch}',
-        orderId: currentOrder!.id,
-        amount: currentOrder!.totalPrice,
-        method: method,
-        status: 'Pending',
-        paymentDate: DateTime.now(),
-      );
+  //   try {
+  //     final payment = Payment(
+  //       id: 'PAY-${DateTime.now().millisecondsSinceEpoch}',
+  //       orderId: currentOrder!.id,
+  //       amount: currentOrder!.totalPrice,
+  //       method: method,
+  //       status: 'Pending',
+  //       paymentDate: DateTime.now(),
+  //     );
 
-      currentPayment = await processPaymentUseCase.execute(payment);
-      isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      errorMessage = e.toString();
-      isLoading = false;
-      notifyListeners();
-      return false;
-    }
-  }
+  //     currentPayment = await processPaymentUseCase.execute(payment);
+  //     isLoading = false;
+  //     notifyListeners();
+  //     return true;
+  //   } catch (e) {
+  //     errorMessage = e.toString();
+  //     isLoading = false;
+  //     notifyListeners();
+  //     return false;
+  //   }
+  // }
 }

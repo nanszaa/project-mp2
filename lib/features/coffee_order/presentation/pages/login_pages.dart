@@ -1,11 +1,13 @@
 import 'package:coffee_shop/features/coffee_order/application/services/login_service.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/register_pages.dart';
-import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
 class LoginPages extends StatefulWidget {
-  const LoginPages({Key? key}) : super(key: key);
+  final CoffeeNotifier notifier;
+
+  const LoginPages({Key? key, required this.notifier}) : super(key: key);
 
   @override
   _LoginPagesState createState() => _LoginPagesState();
@@ -228,7 +230,7 @@ class _LoginPagesState extends State<LoginPages> {
             if (isSuccess) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const HomePages()),
+                MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier,)),
               );
             } else {
               showDialog(
@@ -280,7 +282,7 @@ class _LoginPagesState extends State<LoginPages> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => RegisterPages()),
+            MaterialPageRoute(builder: (context) => RegisterPages(notifier: widget.notifier)),
           );
         },
         child: const Text(

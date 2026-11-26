@@ -1,8 +1,10 @@
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScannerPages extends StatefulWidget {
-  const ScannerPages({super.key});
+  final CoffeeNotifier notifier;
+  const ScannerPages({Key? key, required this.notifier}) : super(key: key);
 
   @override
   State<ScannerPages> createState() => _ScannerPagesState();
@@ -45,9 +47,7 @@ class _ScannerPagesState extends State<ScannerPages> {
           ),
 
           // 2. Lapisan Transparan Gelap di atas kamera agar mirip desain Stitch
-          Container(
-            color: Colors.black.withOpacity(0.4),
-          ),
+          Container(color: Colors.black.withOpacity(0.4)),
 
           // 3. Konten / Elemen UI di atas Kamera
           SafeArea(
@@ -62,7 +62,10 @@ class _ScannerPagesState extends State<ScannerPages> {
                     children: [
                       // Logo / Brand Kohi
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -71,22 +74,46 @@ class _ScannerPagesState extends State<ScannerPages> {
                           children: const [
                             Icon(Icons.coffee, color: Colors.white, size: 16),
                             SizedBox(width: 6),
-                            Text('Kohi Coffee', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(
+                              'Kohi Coffee',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       // Status Kamera Aktif
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           children: [
-                            Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
                             const SizedBox(width: 6),
-                            const Text('KAMERA AKTIF', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'KAMERA AKTIF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -97,7 +124,11 @@ class _ScannerPagesState extends State<ScannerPages> {
                           shape: BoxShape.circle,
                           color: Colors.white.withOpacity(0.2),
                         ),
-                        child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
+                        child: const Icon(
+                          Icons.help_outline,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -108,7 +139,10 @@ class _ScannerPagesState extends State<ScannerPages> {
                     width: 260,
                     height: 260,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.6),
+                        width: 2,
+                      ),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Stack(
@@ -121,7 +155,13 @@ class _ScannerPagesState extends State<ScannerPages> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFFDECD0),
                               boxShadow: [
-                                BoxShadow(color: const Color(0xFFFDECD0).withOpacity(0.8), blurRadius: 8, spreadRadius: 2),
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFFFDECD0,
+                                  ).withOpacity(0.8),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
                               ],
                             ),
                           ),
@@ -133,14 +173,21 @@ class _ScannerPagesState extends State<ScannerPages> {
 
                   // Badge Akses Cepat
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
                       '⚡ AKSES CEPAT • TANPA LOGIN',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -148,7 +195,11 @@ class _ScannerPagesState extends State<ScannerPages> {
                   // Teks Sambutan
                   const Text(
                     'Selamat Datang di Kohi Coffee',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 6),
@@ -168,7 +219,10 @@ class _ScannerPagesState extends State<ScannerPages> {
                       await _scannerController.toggleTorch();
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(24),
@@ -176,11 +230,21 @@ class _ScannerPagesState extends State<ScannerPages> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(_isFlashOn ? Icons.flash_on : Icons.flash_off, color: Colors.white, size: 18),
+                          Icon(
+                            _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
-                            _isFlashOn ? 'Matikan Flashlight' : 'Nyalakan Flashlight',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                            _isFlashOn
+                                ? 'Matikan Flashlight'
+                                : 'Nyalakan Flashlight',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
@@ -199,15 +263,27 @@ class _ScannerPagesState extends State<ScannerPages> {
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black87,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.keyboard_outlined, size: 18, color: Colors.black87),
+                          Icon(
+                            Icons.keyboard_outlined,
+                            size: 18,
+                            color: Colors.black87,
+                          ),
                           SizedBox(width: 8),
-                          Text('Input Manual Nomor Meja', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(
+                            'Input Manual Nomor Meja',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),

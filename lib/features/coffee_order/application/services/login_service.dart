@@ -27,10 +27,10 @@ class LoginService {
     try {
       final List<User> users = await getUsers();
 
-      for (var u in users) {
-        print('Data DB -> Email: ${u.email}, Password: ${u.password}');
-      }
-      print('Input User -> Email: $email, Password: $password');
+      // for (var u in users) {
+      //   print('Data DB -> Email: ${u.email}, Password: ${u.password}');
+      // }
+      // print('Input User -> Email: $email, Password: $password');
 
       // Cocokkan berdasarkan EMAIL dan PASSWORD, bukan name
       final User? matchedUser = users.cast<User?>().firstWhere(
@@ -41,10 +41,9 @@ class LoginService {
       if (matchedUser != null) {
         final userInfo = UserInfo();
         await userInfo.setToken(matchedUser.email);
-        await userInfo.setUserID(matchedUser.id.toString());
-        await userInfo.setUsername(
-          matchedUser.name,
-        ); // Simpan namanya untuk profil
+        await userInfo.setUserID(matchedUser.id);
+        await userInfo.setUsername(matchedUser.name);
+        await userInfo.setMember(matchedUser.isMember.toString());
         return true;
       }
       return false;

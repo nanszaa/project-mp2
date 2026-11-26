@@ -4,7 +4,7 @@ import 'package:coffee_shop/features/coffee_order/domain/entities/payment.dart';
 class Order {
   final String id;
   final String userId;
-  final String tableId;
+  final String? tableId;
   final List<CoffeeItem> items;
   final double totalPrice;
   final String orderStatus;
@@ -14,7 +14,7 @@ class Order {
   Order({
     required this.id,
     required this.userId,
-    required this.tableId,
+    this.tableId,
     required this.items,
     required this.totalPrice,
     required this.orderStatus,
@@ -25,15 +25,15 @@ class Order {
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
       id: map["id"]?.toString() ?? '',
-      userId: map["userId"]?.toString() ?? '',
-      tableId: map["tableId"]?.toString() ?? '',
+      userId: map["user_id"]?.toString() ?? '',
+      tableId: map["table_id"]?.toString() ?? '',
       // Konversi tiap item menjadi CoffeeItem
       items: (map["items"] as List<dynamic>?)
               ?.map((item) => CoffeeItem.fromMap(item as Map<String, dynamic>))
               .toList() ??
           [],
-      totalPrice: (map["totalPrice"] as num?)?.toDouble() ?? 0.0,
-      orderStatus: map["orderStatus"]?.toString() ?? '',
+      totalPrice: (map["total_price"] as num?)?.toDouble() ?? 0.0,
+      orderStatus: map["order_status"]?.toString() ?? '',
       notes: map["notes"]?.toString() ?? '',
       // Konversi payment jika ada
       payment: map["payment"] != null && map["payment"] is Map<String, dynamic>
@@ -46,12 +46,11 @@ class Order {
 
   Map<String, dynamic> toMap() => {
     'id': id,
-    'userId': userId,
-    'tableId': tableId,
-    // Ubah tiap objek menjadi Map
+    'user_id': userId,
+    'table_id': tableId ?? '',
     'items': items.map((item) => item.toMap()).toList(),
-    'totalPrice': totalPrice,
-    'orderStatus': orderStatus,
+    'total_price': totalPrice,
+    'order_status': orderStatus,
     'notes': notes,
     'payment': payment?.toMap(),
   };

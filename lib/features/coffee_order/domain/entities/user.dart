@@ -21,8 +21,8 @@ class User {
       name: map["name"]?.toString() ?? '',
       email: map["email"]?.toString() ?? '',
       password: map["password"]?.toString() ?? '',
-      phoneNumber: map["phoneNumber"]?.toString(),
-      isMember: map["isMember"] ?? false,
+      phoneNumber: map["phone_number"]?.toString(),
+      isMember: map["is_member"] ?? false,
     );
   }
 
@@ -34,7 +34,7 @@ class User {
     'email': email,
     'password': password,
     'phoneNumber': phoneNumber,
-    'isMember': isMember,
+    'is_member': isMember,
   };
 
   Map<String, dynamic> toJson() => toMap();

@@ -1,8 +1,11 @@
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPages extends StatelessWidget {
-  const RegisterPages({super.key});
+  final CoffeeNotifier notifier;
+
+  const RegisterPages({super.key, required this.notifier});
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +269,7 @@ class RegisterPages extends StatelessWidget {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const HomePages(),
+                              builder: (context) => HomePages(notifier: notifier,),
                             ),
                           );
                         },
