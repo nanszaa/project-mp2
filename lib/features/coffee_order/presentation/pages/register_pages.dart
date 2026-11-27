@@ -4,8 +4,19 @@ import 'package:flutter/material.dart';
 
 class RegisterPages extends StatelessWidget {
   final CoffeeNotifier notifier;
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
 
-  const RegisterPages({super.key, required this.notifier});
+  const RegisterPages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -269,7 +280,7 @@ class RegisterPages extends StatelessWidget {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => HomePages(notifier: notifier,),
+                              builder: (context) => HomePages(notifier: notifier, token: token, userId: userId, username: username, member: member),
                             ),
                           );
                         },

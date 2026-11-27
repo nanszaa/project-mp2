@@ -8,7 +8,19 @@ import 'package:coffee_shop/features/coffee_order/presentation/pages/cart_pages.
 
 class MenuScreen extends StatefulWidget {
   final CoffeeNotifier notifier;
-  const MenuScreen({Key? key, required this.notifier}) : super(key: key);
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
+
+  const MenuScreen({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   State<MenuScreen> createState() => _MenuScreenState();
@@ -123,7 +135,7 @@ class _MenuScreenState extends State<MenuScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CartPages(notifier: widget.notifier),
+                              CartPages(notifier: widget.notifier, token: widget.token, userId: widget.userId, username: widget.username, member: widget.member),
                         ),
                       );
                     },

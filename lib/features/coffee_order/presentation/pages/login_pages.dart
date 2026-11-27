@@ -6,8 +6,19 @@ import 'package:flutter/material.dart';
 
 class LoginPages extends StatefulWidget {
   final CoffeeNotifier notifier;
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
 
-  const LoginPages({Key? key, required this.notifier}) : super(key: key);
+  const LoginPages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   _LoginPagesState createState() => _LoginPagesState();
@@ -230,7 +241,7 @@ class _LoginPagesState extends State<LoginPages> {
             if (isSuccess) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier,)),
+                MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier, token: widget.token, userId: widget.userId, username: widget.username, member: widget.member)),
               );
             } else {
               showDialog(
@@ -282,7 +293,7 @@ class _LoginPagesState extends State<LoginPages> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => RegisterPages(notifier: widget.notifier)),
+            MaterialPageRoute(builder: (context) => RegisterPages(notifier: widget.notifier, token: widget.token, userId: widget.userId, username: widget.username, member: widget.member)),
           );
         },
         child: const Text(

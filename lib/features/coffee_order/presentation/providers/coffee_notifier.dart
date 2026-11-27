@@ -12,12 +12,6 @@ class CoffeeNotifier extends ChangeNotifier {
   // INIT VARIABLE
   bool isLoading = false;
   String? errorMessage;
-
-  String token = "";
-  String userId = "";
-  String username = "";
-  String member = "";
-
   bool isSuccess = false;
 
   // State variable
@@ -29,70 +23,6 @@ class CoffeeNotifier extends ChangeNotifier {
 
   // Helper untuk mendapatkan nomor meja aktif di UI
   String get tableNumber => activeTable?.tableNumber ?? '';
-
-  Future<void> loadToken() async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      final String? savedToken = await UserInfo().getToken();
-      token = savedToken ?? '';
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-  
-  Future<void> loadUser() async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      final String? savedUserId = await UserInfo().getUserID();
-      userId = savedUserId ?? '';
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> loadUsername() async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      final String? savedUsername = await UserInfo().getUsername();
-      username = savedUsername ?? '';
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-  
-  Future<void> loadMember() async {
-    isLoading = true;
-    errorMessage = '';
-    notifyListeners();
-
-    try {
-      final String? savedMember = await UserInfo().getMember();
-      member = savedMember ?? '';
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
 
   // Kelola Cart
   void addToCart(CoffeeItem item) {

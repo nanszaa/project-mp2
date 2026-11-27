@@ -1,3 +1,4 @@
+import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/menu_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/pages/scanner_pages.dart';
 import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
@@ -5,19 +6,74 @@ import 'package:flutter/material.dart';
 
 class HomePages extends StatefulWidget {
   final CoffeeNotifier notifier;
-  const HomePages({Key? key, required this.notifier}) : super(key: key);
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
+
+  const HomePages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   _HomePagesState createState() => _HomePagesState();
 }
 
 class _HomePagesState extends State<HomePages> {
+  int _selectedNavIndex = 0;
+  List<CoffeeItem> _allMenuItems = [];
+
+  String? _token;
+  String? _userId;
+  String? _username;
+  String? _member;
 
   @override
   void initState() {
     super.initState();
-    widget.notifier.loadToken();
-    widget.notifier.loadUsername();
+
+    widget.notifier.addListener(_onNotifierChanged);
+    widget.notifier.loadMenu();
+
+    _token = widget.token;
+    _userId = widget.userId;
+    _username = widget.username;
+    _member = widget.member;
+  }
+
+  @override
+  void dispose() {
+    widget.notifier.removeListener(_onNotifierChanged);
+    super.dispose();
+  }
+
+  void _onNotifierChanged() {
+    if (!mounted) return;
+    setState(() {
+      _allMenuItems = widget.notifier.menuList;
+    });
+  }
+
+  void _onScanQrPressed() {
+    if (_token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Silakan login terlebih dahulu untuk scan QR meja.'),
+        ),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScannerPages(notifier: widget.notifier),
+      ),
+    );
   }
 
   @override
@@ -31,19 +87,19 @@ class _HomePagesState extends State<HomePages> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. Top Header
-              _buildTopHeader(),
+              _buildTopHeader(_username),
               const SizedBox(height: 20),
               // 2. Greeting & Unscanned Badge
-              _buildGreetingSection(widget.notifier.token, widget.notifier.username),
+              _buildGreetingSection(_token, _username),
               const SizedBox(height: 16),
               // 3. Scan QR Banner Card (Primary Action)
-              _buildScanQrBanner(),
+              _buildScanQrBanner(_token),
               const SizedBox(height: 20),
               // 4. Chef's Table Perks Promo
-              _buildChefPerksSection(),
+              _buildMemberPromoCard(_token),
               const SizedBox(height: 20),
-              // 5. Locked Menu Box
-              _buildLockedMenuCard(),
+              // 5. Menu List
+              _buildMenuList(),
               const SizedBox(height: 20),
               // 6. Waiter Assistance Card
               _buildWaiterAssistanceCard(),
@@ -52,129 +108,97 @@ class _HomePagesState extends State<HomePages> {
         ),
       ),
       // 7. Bottom Navigation Bar dengan Tombol Tengah (Scan QR)
-      bottomNavigationBar: _buildBottomNavBar(),
+      bottomNavigationBar: _buildBottomNavBar(_selectedNavIndex),
     );
   }
 
-  Widget _buildTopHeader() {
+  Widget _buildTopHeader(String? username) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(8),
+          children: const [
+            Icon(Icons.coffee, color: Color(0xFF4E342E), size: 28),
+            SizedBox(width: 8),
+            Text(
+              'KopiKita',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF3E2723),
               ),
-              child: const Icon(
-                Icons.restaurant,
-                color: Color(0xFFB84A0F),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'DINE-IN BISTRO',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-                Text(
-                  'Home Screen',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
             ),
           ],
         ),
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey[200],
-              ),
-              child: const Icon(
-                Icons.notifications_none,
-                size: 20,
-                color: Colors.black87,
-              ),
+        TextButton.icon(
+          onPressed: () {
+            // Arahkan ke halaman Login atau Profil
+          },
+          icon: Icon(
+            _token != null ? Icons.person : Icons.login,
+            size: 18,
+            color: const Color(0xFF4E342E),
+          ),
+          label: Text(
+            _token != null ? (username ?? 'Member') : 'Login',
+            style: const TextStyle(
+              color: Color(0xFF4E342E),
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFFB84A0F),
-              ),
-              child: const Icon(Icons.person, size: 18, color: Colors.white),
-            ),
-          ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildGreetingSection(String? token, String? username) {
-    final bool isScanned = token != null && token.isNotEmpty;
-    final String displayName = (username != null && username.isNotEmpty) ? username : 'CoffeeLover';
+    final bool hasTable = widget.notifier.activeTable != null;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text( 
-              'Hello, $displayName 👋',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                token != null && username != null
+                    ? 'Halo, $username!'
+                    : 'Selamat Datang!',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Ready to enjoy fresh culinary delights?',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
+              const SizedBox(height: 4),
+              const Text(
+                'Scan QR di meja untuk pesan & diantar langsung.',
+                style: TextStyle(fontSize: 13, color: Colors.black54),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: isScanned
-                ? const Color(0xFFE6F4EA)
-                : const Color(0xFFEFECE6),
+            color: hasTable ? const Color(0xFFE6F4EA) : const Color(0xFFFFF3CD),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: isScanned ? Colors.green : Colors.amber,
-                  shape: BoxShape.circle,
-                ),
+              Icon(
+                hasTable ? Icons.check_circle : Icons.table_restaurant,
+                size: 14,
+                color: hasTable ? Colors.green[800] : Colors.amber[900],
               ),
               const SizedBox(width: 6),
               Text(
-                isScanned ? 'Meja Aktif' : 'Belum Scan Meja',
-                style: TextStyle(
+                hasTable ? widget.notifier.activeTable!.id : 'Belum Scan Meja',
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -187,136 +211,81 @@ class _HomePagesState extends State<HomePages> {
     );
   }
 
-  Widget _buildScanQrBanner() {
+  Widget _buildScanQrBanner(String? token) {
+    final bool hasTable = widget.notifier.activeTable != null;
+
     return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: const Color(0xFF4E342E),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFDECD0),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.qr_code,
-                  color: Color(0xFFB84A0F),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'LANGKAH PERTAMA',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFB84A0F),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Scan QR Meja untuk Membuka Menu',
-            style: TextStyle(
+          Text(
+            hasTable
+                ? 'Terhubung ke Meja ${widget.notifier.activeTable!.tableNumber}'
+                : 'Pesan dari Meja via Scan QR',
+            style: const TextStyle(
+              color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Arahkan kamera ke kode QR di meja Anda untuk mengaktifkan pemesanan & melihat menu spesial.',
-            style: TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
+          Text(
+            token != null
+                ? 'Arahkan kamera ke QR code pada meja kosong, pilih menu, lalu bayar.'
+                : 'Login dulu ke aplikasi, lalu scan QR meja agar pesanan langsung diantar ke mejamu.',
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ScannerPages(notifier: widget.notifier),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB84A0F),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.camera_alt_outlined, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Scan QR Meja Sekarang',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                ],
-              ),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            onPressed: _onScanQrPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD7CCC8),
+              foregroundColor: const Color(0xFF3E2723),
             ),
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(hasTable ? 'Ganti / Scan Ulang QR' : 'Scan QR Meja'),
           ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                backgroundColor: const Color(0xFFF7F5F0),
-                foregroundColor: Colors.black87,
-                side: BorderSide.none,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.bolt, size: 16, color: Color(0xFFB84A0F)),
-                  SizedBox(width: 6),
-                  Text(
-                    'Simulasikan Scan QR Meja (Demo)',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.lock_open, size: 12, color: Colors.green),
-                SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMemberPromoCard(String? token) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE6DFD3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.local_offer, color: Color(0xFF8D6E63), size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  'Menu otomatis terbuka seketika setelah scan',
-                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                  token != null
+                      ? 'Promo Khusus Member Aktif'
+                      : 'Info Promo Member',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Member dapat menikmati promo spesial, termasuk saat transaksi lewat kasir atau web.',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ],
             ),
@@ -326,204 +295,131 @@ class _HomePagesState extends State<HomePages> {
     );
   }
 
-  Widget _buildChefPerksSection() {
+  Widget _buildMenuList() {
+    final allMenus = widget.notifier.menuList;
+    final previewMenus = allMenus.take(10).toList();
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Row(
-              children: [
-                Icon(
-                  Icons.local_offer_outlined,
-                  size: 16,
-                  color: Color(0xFFB84A0F),
-                ),
-                SizedBox(width: 6),
-                Text(
-                  "Chef's Table Perks",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-              ],
-            ),
+          children: [
             Text(
-              'Swipe deals →',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFFB84A0F),
-                fontWeight: FontWeight.bold,
-              ),
+              'Jelajahi Menu',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            OutlinedButton(
+              onPressed: () {
+                // Navigasi ke halaman daftar menu
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MenuScreen(
+                      notifier: widget.notifier,
+                      token: widget.token,
+                      userId: widget.userId,
+                      username: widget.username,
+                      member: widget.member,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Lihat Menu'),
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Container(
-          height: 160,
-          decoration: BoxDecoration(
-            color: Colors.brown[900],
-            borderRadius: BorderRadius.circular(18),
-            image: const DecorationImage(
-              image: NetworkImage(
-                'https://images.unsplash.com/photo-1544025162-d76694265947?w=500',
-              ),
-              fit: BoxFit.cover,
-              colorFilter: ColorFilter.mode(Colors.black38, BlendMode.darken),
-            ),
-          ),
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.orange[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  '25% OFF',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
+        const SizedBox(height: 12),
+        // list 10 menu carousel
+        previewMenus.isEmpty
+            ? Text(
+                'Belum ada menu tersedia.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              )
+            : SizedBox(
+                height: 180,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: previewMenus.length,
+                  itemBuilder: (context, index) {
+                    final item = previewMenus[index];
+                    return _buildMenuCarouselCard(item);
+                  },
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "CHEF'S CUT SPECIAL",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'A5 Wagyu Ribeye Steak',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Use at checkout: CHEF25',
-                        style: TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black87,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 4,
-                          ),
-                          minimumSize: const Size(0, 28),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          'COPY',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildLockedMenuCard() {
+  Widget _buildMenuCarouselCard(dynamic item) {
+    // Ganti tipe `dynamic` menjadi `CoffeeItem` sesuai model menu kamu
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: 145,
+      margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE6DFD3)),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFDECD0),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.lock_outline,
-              color: Color(0xFFB84A0F),
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Menu akan tampil setelah di scan',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Silakan scan QR code di meja restoran Anda untuk membuka daftar menu lengkap, harga, dan melakukan pemesanan langsung dari meja.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: Colors.grey, height: 1.4),
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MenuScreen(notifier: widget.notifier)),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB84A0F),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.qr_code_scanner, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Buka Kunci Menu (Scan QR)',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          AspectRatio(
+            aspectRatio: 4 / 3,
+            child: item.imageUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(14), 
+                      topRight: Radius.circular(14)
+                    ),
+                    child: Image.network(
+                      item.imageUrl,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Colors.grey[200],
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.coffee, color: Colors.grey),
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: Colors.grey[200],
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.coffee, color: Colors.grey),
                   ),
-                ],
-              ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name.toString(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Rp ${item.price}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFB84A0F),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -533,56 +429,22 @@ class _HomePagesState extends State<HomePages> {
 
   Widget _buildWaiterAssistanceCard() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFECE6),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFFF3EFE6),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.room_service,
-              color: Colors.green,
-              size: 20,
-            ),
-          ),
+          const Icon(Icons.room_service, color: Color(0xFF5D4037)),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Need waiter assistance?',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Tap to alert your assigned floor server',
-                  style: TextStyle(color: Colors.grey, fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black87,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Call Waiter',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+            child: Text(
+              widget.notifier.activeTable != null
+                  ? 'Setelah pembayaran berhasil, barista menyiapkan pesanan dan waiter/kasir akan mengantarnya ke Meja ${widget.notifier.activeTable!.tableNumber}.'
+                  : 'Pesanan QR akan langsung diantar waiter/kasir ke meja setelah selesai dibuat. Butuh bantuan? Hubungi kasir atau waiter.',
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
             ),
           ),
         ],
@@ -590,65 +452,31 @@ class _HomePagesState extends State<HomePages> {
     );
   }
 
-  Widget _buildBottomNavBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          // Tab Home (Aktif)
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.restaurant_menu, color: Color(0xFFB84A0F), size: 22),
-              SizedBox(height: 2),
-              Text(
-                'Home',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFB84A0F),
-                ),
-              ),
-            ],
-          ),
-          // Tab Tengah (Scan QR Terhighlight Bulat)
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: Color(0xFFB84A0F),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.qr_code_scanner,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          // Tab Profile
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.person_outline, color: Colors.grey, size: 22),
-              SizedBox(height: 2),
-              Text(
-                'Profile',
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-            ],
-          ),
-        ],
-      ),
+  Widget _buildBottomNavBar(int currentIndex) {
+    return BottomNavigationBar(
+      currentIndex: currentIndex,
+      selectedItemColor: const Color(0xFF4E342E),
+      unselectedItemColor: Colors.grey,
+      onTap: (index) {
+        if (index == 1) {
+          _onScanQrPressed();
+          return;
+        }
+        setState(() {
+          _selectedNavIndex = index;
+        });
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.qr_code_scanner),
+          label: 'Scan QR',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.receipt_long),
+          label: 'Pesanan',
+        ),
+      ],
     );
   }
 }

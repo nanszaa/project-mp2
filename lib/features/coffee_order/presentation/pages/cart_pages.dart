@@ -7,10 +7,20 @@ import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_
 import 'package:coffee_shop/features/coffee_order/presentation/utils/currency_formatter.dart';
 
 class CartPages extends StatefulWidget {
-  // Menerima notifier langsung dari halaman pemanggil (MenuScreen)
   final CoffeeNotifier notifier;
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
 
-  const CartPages({Key? key, required this.notifier}) : super(key: key);
+  const CartPages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   State<CartPages> createState() => _CartPagesState();
@@ -684,7 +694,7 @@ class _CartPagesState extends State<CartPages> {
                           Navigator.pop(ctx); // Tutup pop-up
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier)),
+                            MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier, token: widget.token, userId: widget.userId, username: widget.username, member: widget.member)),
                           );
                         },
                         child: const Text(

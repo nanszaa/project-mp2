@@ -1,6 +1,7 @@
 import 'package:coffee_shop/features/coffee_order/application/helpers/api_clients.dart';
 import 'package:coffee_shop/features/coffee_order/application/helpers/user_info.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/user.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:dio/dio.dart';
 
 class LoginService {
@@ -46,6 +47,11 @@ class LoginService {
         await userInfo.setMember(matchedUser.isMember.toString());
         return true;
       }
+      print(UserInfo().getToken());
+      print(UserInfo().getUserID());
+      print(UserInfo().getUsername());
+      print(UserInfo().getMember());
+
       return false;
     } catch (e) {
       print('Error login: $e');

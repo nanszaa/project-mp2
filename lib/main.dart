@@ -8,23 +8,38 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   final String? token = await UserInfo().getToken();
+  final String? user = await UserInfo().getUserID();
+  final String? name = await UserInfo().getUsername();
+  final String? member = await UserInfo().getMember();
   print('Token: $token');
+  print('User: $user');
+  print('Name: $name');
+  print('Member: $member');
 
   final coffeeNotifier = CoffeeNotifier();
 
   runApp(MyApp(
     token: token,
+    user: user,
+    name: name,
+    member: member,
     notifier: coffeeNotifier,
   ));
 }
 
 class MyApp extends StatelessWidget {
   final String? token;
+  final String? user;
+  final String? name;
+  final String? member;
   final CoffeeNotifier notifier;
 
   const MyApp({
     super.key,
     required this.token,
+    required this.user,
+    required this.name,
+    required this.member,
     required this.notifier,
   });
 
@@ -38,7 +53,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       // Cek autentikasi: jika token null ke LoginPages, jika ada langsung ke HomePages
-      home: token == null ? LoginPages(notifier: notifier) : HomePages(notifier: notifier),
+      home: token == null 
+      ? LoginPages(notifier: notifier, token: token, userId: user, username: name, member: member) 
+      : HomePages(notifier: notifier, token: token, userId: user, username: name, member: member),
     );
   }
 }

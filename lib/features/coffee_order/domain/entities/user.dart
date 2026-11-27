@@ -33,7 +33,7 @@ class User {
     'name': name,
     'email': email,
     'password': password,
-    'phoneNumber': phoneNumber,
+    'phone_number': phoneNumber,
     'is_member': isMember,
   };
 
