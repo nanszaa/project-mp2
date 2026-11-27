@@ -8,7 +8,9 @@ class TableNumberService {
     try {
       final Response response = await ApiClient().get('table-number');
       final List data = response.data as List;
-      List<TableNumber> result = data.map((map) => TableNumber.fromMap(map)).toList();
+      List<TableNumber> result = data
+          .map((map) => TableNumber.fromMap(map))
+          .toList();
       return result;
     } catch (e) {
       print('Error getCoffee: $e');
@@ -31,7 +33,9 @@ class TableNumberService {
   }
 
   Future<TableNumber> deleteTable(TableNumber item) async {
-    final Response response = await ApiClient().delete('table-number/${item.id}');
+    final Response response = await ApiClient().delete(
+      'table-number/${item.id}',
+    );
     TableNumber result = TableNumber.fromMap(response.data);
     return result;
   }

@@ -1,3 +1,4 @@
+import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
 import 'package:flutter/material.dart';
 
 // [1. IMPORT ENTITAS, NOTIFIER, DAN HELPER FORMAT RUPIAH]
@@ -6,10 +7,20 @@ import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_
 import 'package:coffee_shop/features/coffee_order/presentation/utils/currency_formatter.dart';
 
 class CartPages extends StatefulWidget {
-  // Menerima notifier langsung dari halaman pemanggil (MenuScreen)
   final CoffeeNotifier notifier;
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
 
-  const CartPages({Key? key, required this.notifier}) : super(key: key);
+  const CartPages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   State<CartPages> createState() => _CartPagesState();
@@ -71,60 +82,6 @@ class _CartPagesState extends State<CartPages> {
     }
   }
 
-  // ==============================================================
-  // AKSI PEMESANAN (CHECKOUT)
-  // ==============================================================
-  Future<void> _handleCheckout(double total) async {
-    // Pastikan meja aktif tersedia (jika null, gunakan default '04' untuk simulasi)
-    final tableId = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
-
-    // Panggil fungsi checkoutOrder di dalam notifier
-    final success = await widget.notifier.checkoutOrder('CUST-001');
-
-    if (!mounted) return;
-
-    if (success) {
-      // Tampilkan dialog pop-up sukses jika pesanan berhasil terbuat
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
-              SizedBox(width: 8),
-              Text('Pesanan Diterima!'),
-            ],
-          ),
-          content: Text(
-            'Pesananmu untuk $tableId berhasil dikirim ke barista.\nTotal: ${formatRupiah(total)}\n\nCatatan: ${_baristaNotesController.text.isEmpty ? "-" : _baristaNotesController.text}',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(ctx); // Tutup pop-up
-                Navigator.pop(context); // Kembali ke halaman menu
-              },
-              child: const Text('Kembali ke Menu', style: TextStyle(color: Color(0xFF4A3319), fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Tampilkan snackbar merah jika gagal membuat pesanan
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.notifier.errorMessage.isNotEmpty
-                ? widget.notifier.errorMessage
-                : 'Gagal membuat pesanan. Pastikan meja sudah ditentukan.',
-          ),
-          backgroundColor: Colors.red[700],
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +124,7 @@ class _CartPagesState extends State<CartPages> {
 
                     const SizedBox(height: 16),
 
-                    // 4. Satu-satunya Catatan: Catatan ke Barista
+                    // 4. Catatan ke Barista
                     _buildBaristaNotesBox(),
                     const SizedBox(height: 16),
 
@@ -180,7 +137,7 @@ class _CartPagesState extends State<CartPages> {
                     const SizedBox(height: 24),
 
                     // 7. Tombol Pesan Sekarang
-                    _buildCheckoutButton(subtotal),
+                    _checkoutBtn(subtotal),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -193,7 +150,6 @@ class _CartPagesState extends State<CartPages> {
   // WIDGET-WIDGET TAMPILAN (KOMPONEN UI)
   // ==============================================================
 
-  // Tampilan ramah ketika belum ada menu yang dimasukkan
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
@@ -228,11 +184,19 @@ class _CartPagesState extends State<CartPages> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4A3319),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('Lihat Menu Kopi', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Lihat Menu Kopi',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -252,14 +216,24 @@ class _CartPagesState extends State<CartPages> {
                 color: Colors.brown[50],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.coffee, color: Color(0xFF4A3319), size: 20),
+              child: const Icon(
+                Icons.coffee,
+                color: Color(0xFF4A3319),
+                size: 20,
+              ),
             ),
             const SizedBox(width: 8),
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kohi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('Pesanan', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(
+                  'Kohi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                Text(
+                  'Pesanan',
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                ),
               ],
             ),
           ],
@@ -277,7 +251,6 @@ class _CartPagesState extends State<CartPages> {
   }
 
   Widget _buildCartHeader(int totalItems) {
-    // Ambil nomor meja aktif dari notifier
     final tableLabel = widget.notifier.activeTable?.tableNumber ?? 'Meja 04';
 
     return Row(
@@ -320,7 +293,11 @@ class _CartPagesState extends State<CartPages> {
           ),
           child: Text(
             '$totalItems Menu',
-            style: const TextStyle(color: Colors.brown, fontWeight: FontWeight.bold, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.brown,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
         ),
       ],
@@ -334,7 +311,6 @@ class _CartPagesState extends State<CartPages> {
     required VoidCallback onMinus,
     required VoidCallback onDelete,
   }) {
-    // MENGGUNAKAN formatRupiah yang sudah kita buat
     final formattedPrice = formatRupiah(item.price);
 
     return Container(
@@ -354,7 +330,6 @@ class _CartPagesState extends State<CartPages> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gambar menu produk
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: item.imageUrl.isNotEmpty
@@ -378,8 +353,6 @@ class _CartPagesState extends State<CartPages> {
                   ),
           ),
           const SizedBox(width: 12),
-
-          // Rincian teks: Nama, Kategori (pengganti catatan per item), dan Harga
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,8 +389,6 @@ class _CartPagesState extends State<CartPages> {
               ],
             ),
           ),
-
-          // Tombol Hapus (x) dan Stepper Kuantitas (- qty +)
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -438,8 +409,15 @@ class _CartPagesState extends State<CartPages> {
                       onTap: onMinus,
                       borderRadius: BorderRadius.circular(16),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Icon(Icons.remove, size: 14, color: Colors.black87),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Icon(
+                          Icons.remove,
+                          size: 14,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     Text(
@@ -454,7 +432,10 @@ class _CartPagesState extends State<CartPages> {
                       onTap: onAdd,
                       borderRadius: BorderRadius.circular(16),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         child: Icon(Icons.add, size: 14, color: Colors.black87),
                       ),
                     ),
@@ -475,7 +456,11 @@ class _CartPagesState extends State<CartPages> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -488,10 +473,16 @@ class _CartPagesState extends State<CartPages> {
                 children: [
                   Icon(Icons.edit_note, size: 18, color: Colors.black87),
                   SizedBox(width: 6),
-                  Text('Catatan ke Barista', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    'Catatan ke Barista',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
                 ],
               ),
-              Text('Opsional', style: TextStyle(color: Colors.grey, fontSize: 11)),
+              Text(
+                'Opsional',
+                style: TextStyle(color: Colors.grey, fontSize: 11),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -500,7 +491,8 @@ class _CartPagesState extends State<CartPages> {
             maxLines: 2,
             style: const TextStyle(fontSize: 12),
             decoration: InputDecoration(
-              hintText: 'Contoh: Pisahkan gula untuk latte, croissant dipanaskan sedang...',
+              hintText:
+                  'Contoh: Pisahkan gula untuk latte, croissant dipanaskan sedang...',
               hintStyle: const TextStyle(color: Colors.grey, fontSize: 11),
               filled: true,
               fillColor: const Color(0xFFF9F9F9),
@@ -523,7 +515,11 @@ class _CartPagesState extends State<CartPages> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -532,7 +528,10 @@ class _CartPagesState extends State<CartPages> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Text('Ringkasan Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(
+                'Ringkasan Pembayaran',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               Icon(Icons.receipt_long_outlined, size: 18, color: Colors.grey),
             ],
           ),
@@ -540,9 +539,17 @@ class _CartPagesState extends State<CartPages> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Subtotal ($totalCount Item)', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              // Menggunakan formatRupiah
-              Text(formatRupiah(subtotal), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(
+                'Subtotal ($totalCount Item)',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              Text(
+                formatRupiah(subtotal),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -551,16 +558,31 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Row(
                 children: [
-                  const Text('Pajak & Layanan (10%)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const Text(
+                    'Pajak & Layanan (10%)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(4)),
-                    child: const Text('Termasuk', style: TextStyle(fontSize: 9, color: Colors.black54)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'Termasuk',
+                      style: TextStyle(fontSize: 9, color: Colors.black54),
+                    ),
                   ),
                 ],
               ),
-              const Text('Rp 0', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text(
+                'Rp 0',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           const Padding(
@@ -573,15 +595,24 @@ class _CartPagesState extends State<CartPages> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('Total Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(
+                    'Total Pembayaran',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
                   SizedBox(height: 2),
-                  Text('Sudah termasuk PB1 & servis', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  Text(
+                    'Sudah termasuk PB1 & servis',
+                    style: TextStyle(fontSize: 10, color: Colors.grey),
+                  ),
                 ],
               ),
-              // Menggunakan formatRupiah
               Text(
                 formatRupiah(subtotal),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -604,21 +635,89 @@ class _CartPagesState extends State<CartPages> {
             children: [
               Icon(Icons.access_time, size: 16, color: Colors.brown),
               SizedBox(width: 8),
-              Text('Estimasi Pembuatan', style: TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.w500)),
+              Text(
+                'Estimasi Pembuatan',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.brown,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
-          Text('~ 6 - 8 Menit', style: TextStyle(fontSize: 11, color: Colors.brown, fontWeight: FontWeight.bold)),
+          Text(
+            '~ 6 - 8 Menit',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.brown,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCheckoutButton(double subtotal) {
-    final bool isLoading = widget.notifier.isLoading;
+  Widget _checkoutBtn(double subtotal) {
+    return ElevatedButton(
+      onPressed: widget.notifier.isLoading
+          ? null
+          : () async {
+              final notes = _baristaNotesController.text.trim();
+              final bool success = await widget.notifier.checkout(
+                notes: notes,
+              );
+              if (!context.mounted) return;
 
-    return InkWell(
-      onTap: isLoading ? null : () => _handleCheckout(subtotal),
-      borderRadius: BorderRadius.circular(16),
+              if (success) {
+                _baristaNotesController.clear();
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    title: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Color(0xFFB84A0F)),
+                        SizedBox(width: 8),
+                        Text('Pesanan Berhasil Dibuat!'),
+                      ],
+                    ),
+                    content: Text(
+                      'Pesananmu berhasil dibuat dan tercatat di sistem.\nTotal: ${formatRupiah(subtotal)}\n\nCatatan: ${notes.isEmpty ? "-" : notes}\n\nSilakan menunggu di meja, pesananmu sedang disiapkan.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx); // Tutup pop-up
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => HomePages(notifier: widget.notifier, token: widget.token, userId: widget.userId, username: widget.username, member: widget.member)),
+                          );
+                        },
+                        child: const Text(
+                          'Kembali ke Beranda',
+                          style: TextStyle(
+                            color: Color(0xFF4A3319),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      widget.notifier.errorMessage ?? 'Gagal membuat pesanan',
+                    ),
+                  ),
+                );
+              }
+            },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
@@ -626,12 +725,15 @@ class _CartPagesState extends State<CartPages> {
           color: const Color(0xFF4A3319),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: isLoading
+        child: widget.notifier.isLoading
             ? const Center(
                 child: SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
                 ),
               )
             : Row(
@@ -643,19 +745,30 @@ class _CartPagesState extends State<CartPages> {
                       SizedBox(width: 8),
                       Text(
                         'Pesan Sekarang',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
                   Row(
                     children: [
-                      // Menggunakan formatRupiah
                       Text(
                         formatRupiah(subtotal),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward, color: Colors.white, size: 16),
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                     ],
                   ),
                 ],

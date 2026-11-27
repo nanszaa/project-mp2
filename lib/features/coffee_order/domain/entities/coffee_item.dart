@@ -23,9 +23,9 @@ class CoffeeItem {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       price: (map['price'] as num?)?.toDouble() ?? 0.0,
-      imageUrl: map['imageUrl'] ?? map['image_url'] ?? '',
+      imageUrl: map['image_url'] ?? map['image_url'] ?? '',
       category: map['category'] ?? '',
-      isAvailable: map['isAvailable'] ?? map['is_available'] ?? true,
+      isAvailable: map['is_available'] ?? map['is_available'] ?? true,
     );
   }
 
@@ -37,9 +37,9 @@ class CoffeeItem {
     'name': name,
     'description': description,
     'price': price,
-    'imageUrl': imageUrl,
+    'image_url': imageUrl,
     'category': category,
-    'isAvailable': isAvailable,
+    'is_available': isAvailable,
   };
 
   Map<String, dynamic> toJson() => toMap();

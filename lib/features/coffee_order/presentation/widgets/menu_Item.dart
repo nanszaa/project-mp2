@@ -1,22 +1,18 @@
-import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:coffee_shop/features/coffee_order/domain/entities/coffee_item.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/utils/currency_formatter.dart';
 
-class MenuItem extends StatefulWidget {
+class MenuItem extends StatelessWidget {
   final CoffeeNotifier notifier;
   final CoffeeItem item;
-  
+
   const MenuItem({
-    super.key, 
-    required this.notifier, 
-    required this.item
+    super.key,
+    required this.notifier,
+    required this.item,
   });
 
-  @override
-  State<MenuItem> createState() => _MenuItemState();
-}
-
-class _MenuItemState extends State<MenuItem> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,9 +33,9 @@ class _MenuItemState extends State<MenuItem> {
           // Gambar menu produk
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: widget.item.imageUrl.isNotEmpty
+            child: item.imageUrl.isNotEmpty
                 ? Image.network(
-                    widget.item.imageUrl,
+                    item.imageUrl,
                     width: 70,
                     height: 70,
                     fit: BoxFit.cover,
@@ -58,22 +54,25 @@ class _MenuItemState extends State<MenuItem> {
                   ),
           ),
           const SizedBox(width: 12),
+
           // Rincian teks menu
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  widget.item.category.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                if (item.category.isNotEmpty) ...[
+                  Text(
+                    item.category.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
+                  const SizedBox(height: 2),
+                ],
                 Text(
-                  widget.item.name,
+                  item.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -82,14 +81,14 @@ class _MenuItemState extends State<MenuItem> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  widget.item.description,
+                  item.description,
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Rp ${widget.item.price}',
+                  formatRupiah(item.price),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -99,6 +98,7 @@ class _MenuItemState extends State<MenuItem> {
               ],
             ),
           ),
+
           // Tombol tambah ke keranjang
           Container(
             decoration: const BoxDecoration(
@@ -108,11 +108,12 @@ class _MenuItemState extends State<MenuItem> {
             child: IconButton(
               icon: const Icon(Icons.add, size: 18, color: Color(0xFFB84A0F)),
               onPressed: () {
-                widget.notifier.addToCart(widget.item);
+                notifier.addToCart(item);
 
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${widget.item.name} ditambahkan ke keranjang.'),
+                    content: Text('${item.name} ditambahkan ke keranjang.'),
                     duration: const Duration(milliseconds: 800),
                     behavior: SnackBarBehavior.floating,
                   ),

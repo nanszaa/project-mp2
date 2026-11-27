@@ -1,19 +1,19 @@
 class TableNumber {
   final String id;
   final String tableNumber;
-  final bool isOccupied;
+  final bool isAvailable;
 
   TableNumber({
     required this.id,
     required this.tableNumber,
-    required this.isOccupied,
+    required this.isAvailable,
   });
 
   factory TableNumber.fromMap(Map<String, dynamic> map) {
     return TableNumber(
       id: map["id"]?.toString() ?? '',
-      tableNumber: map["tableNumber"]?.toString() ?? '',
-      isOccupied: map["isOccupied"] ?? false,
+      tableNumber: map["table_number"]?.toString() ?? '',
+      isAvailable: map["is_available"] ?? false,
     );
   }
 
@@ -22,8 +22,8 @@ class TableNumber {
 
   Map<String, dynamic> toMap() => {
     'id': id,
-    'tableNumber': tableNumber,
-    'isOccupied': isOccupied,
+    'table_number': tableNumber,
+    'is_available': isAvailable,
   };
 
   Map<String, dynamic> toJson() => toMap();

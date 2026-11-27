@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
 final Dio dio = Dio(BaseOptions(
-  baseUrl: 'https://apilearn.kaylabs.id/api/v1/p-ptwsvxh5',
+  baseUrl: 'https://apilearn.kaylabs.id/api/v1/p-ptwsvxh5/',
   connectTimeout: Duration(milliseconds: 5000),
   receiveTimeout: Duration(milliseconds: 3000),
   headers: {

@@ -1,8 +1,22 @@
 import 'package:coffee_shop/features/coffee_order/presentation/pages/home_pages.dart';
+import 'package:coffee_shop/features/coffee_order/presentation/providers/coffee_notifier.dart';
 import 'package:flutter/material.dart';
 
 class RegisterPages extends StatelessWidget {
-  const RegisterPages({super.key});
+  final CoffeeNotifier notifier;
+  final String? token;
+  final String? userId;
+  final String? username;
+  final String? member;
+
+  const RegisterPages({
+    super.key,
+    required this.notifier,
+    required this.token,
+    required this.userId,
+    required this.username,
+    required this.member,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -266,7 +280,7 @@ class RegisterPages extends StatelessWidget {
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const HomePages(),
+                              builder: (context) => HomePages(notifier: notifier, token: token, userId: userId, username: username, member: member),
                             ),
                           );
                         },
